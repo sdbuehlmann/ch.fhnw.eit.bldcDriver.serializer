@@ -1,9 +1,9 @@
 // =============== Includes ==============================================
-#include <serializer.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "serializer.h"
 
 // =============== Defines ===============================================
 #define START_CONTROL_FLAG_1							1
@@ -37,31 +37,43 @@ static uint8_t bufferCnt = 0;
 
 static uint32_t timestamp = 0;
 static uint8_t lastAttribute = 0;
+static uint8_t lastStartFlag = 0;
 
 // =============== Function pointers =====================================
 
 // =============== Function declarations =================================
+uint8_t is_a_number(uint8_t data);
+uint8_t is_a_ascii_char(uint8_t data);
+uint8_t is_a_start_flag(uint8_t data);
+uint8_t is_a_control_flag(uint8_t data);
+
 void changeState(uint8_t attribute);
 
 // =============== Functions =============================================
-void send_startFlag(){
-	send(START_CONTROL_FLAG_1);
+void send_startFlag1(){
+	store(START_CONTROL_FLAG_1);
+}
+void send_startFlag2(){
+	store(START_CONTROL_FLAG_1);
+}
+void send_startFlag3(){
+	store(START_CONTROL_FLAG_1);
 }
 void send_endFlag(){
-	send(END_CONTROL_FLAG);
+	store(END_CONTROL_FLAG);
 }
 void send_attribute(uint8_t attr){
-	send(attr);
+	store(attr);
 }
 void send_byte(uint8_t data){
-	send(data);
+	store(data);
 }
 void send_unsigned(uint32_t number) {
 	for (uint32_t cnt = 0; cnt < 5; cnt++) {
 		uint8_t temp = number & 0b01111111; // store last 7 bits
 		temp = temp | 0b10000000; // set first bit
 
-		send(temp);
+		store(temp);
 
 		number = number >> 7; // unsigned --> zeros added
 		if (number == 0) {
@@ -78,7 +90,7 @@ void send_string(uint8_t *pMsg) {
 			return;
 		}
 
-		send(*pMsg);
+		store(*pMsg);
 
 		pMsg++;
 	}
@@ -105,11 +117,15 @@ int32_t decode_signed(uint8_t data[], uint8_t nrData) {
 uint8_t is_a_number(uint8_t data) {
 	return (data >= FIRST_NUMBER);
 }
-uint8_t is_a_control_flag(uint8_t data) {
+uint8_t is_a_start_flag(uint8_t data){
 	return (data == START_CONTROL_FLAG_1 ||
-			data == START_CONTROL_FLAG_2 ||
-			data == START_CONTROL_FLAG_3 ||
-			data == END_CONTROL_FLAG);
+				data == START_CONTROL_FLAG_2 ||
+				data == START_CONTROL_FLAG_3 ||
+				data == END_CONTROL_FLAG);
+}
+uint8_t is_a_control_flag(uint8_t data) {
+	return (is_a_start_flag(data) ||
+				data == END_CONTROL_FLAG);
 }
 uint8_t is_a_ascii_char(uint8_t data) {
 	return (data >= FIRST_ASCII_CHAR && data <= LAST_ASCII_CHAR);
@@ -119,13 +135,13 @@ void changeState(uint8_t attribute) {
 	lastAttribute = attribute;
 	bufferCnt = 0;
 
-	if (is_a_event_attribute(attribute)) {
+	if (is_a_event_attribute(lastStartFlag, attribute)) {
 		state = receive_event;
-	} else if (is_a_unsigned_attribute(attribute)) {
+	} else if (is_a_unsigned_attribute(lastStartFlag, attribute)) {
 		state = receive_unsigned;
-	} else if (is_a_signed_attribute(attribute)) {
+	} else if (is_a_signed_attribute(lastStartFlag, attribute)) {
 		state = receive_signed;
-	} else if (is_a_msg_attribute(attribute)) {
+	} else if (is_a_msg_attribute(lastStartFlag, attribute)) {
 		state = receive_msg;
 	} else {
 		timestamp = 0;
@@ -136,7 +152,8 @@ void changeState(uint8_t attribute) {
 void decode(uint8_t receivedByte) {
 	switch (state) {
 	case standby: {
-		if (receivedByte == START_CONTROL_FLAG_1) {
+		if (is_a_start_flag(receivedByte)) {
+			lastStartFlag = receivedByte;
 			state = receive_timestamp;
 		}
 	}
@@ -156,7 +173,7 @@ void decode(uint8_t receivedByte) {
 	}
 		break;
 	case receive_event: {
-		eventReceived(timestamp, lastAttribute);
+		eventReceived(timestamp, lastStartFlag, lastAttribute);
 
 		changeState(receivedByte);
 	}
@@ -169,7 +186,7 @@ void decode(uint8_t receivedByte) {
 			return;
 		}
 
-		msgReceived(timestamp, lastAttribute, buffer, bufferCnt);
+		msgReceived(timestamp, lastStartFlag, lastAttribute, buffer, bufferCnt);
 
 		changeState(receivedByte);
 	}
@@ -183,7 +200,7 @@ void decode(uint8_t receivedByte) {
 		}
 
 		uint32_t value = decode_unsigned(buffer, bufferCnt);
-		unsignedReceived(timestamp, lastAttribute, value);
+		unsignedReceived(timestamp, lastStartFlag, lastAttribute, value);
 
 		changeState(receivedByte);
 	}
@@ -197,7 +214,7 @@ void decode(uint8_t receivedByte) {
 		}
 
 		int32_t value = decode_signed(buffer, bufferCnt);
-		signedReceived(timestamp, lastAttribute, value);
+		signedReceived(timestamp, lastStartFlag, lastAttribute, value);
 
 		changeState(receivedByte);
 	}

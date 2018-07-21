@@ -10,10 +10,22 @@
 
 #include <stdint.h>
 
+// supported
+//#define LOGGER_RX
+//#define LOGGER_TX
+//#define OBSERVER_RX
+//#define OBSERVER_TX
+#define OPERATOR_RX
+#define OPERATOR_TX
+
 //========== functions has to be implemented from user =============================
 void handleSerialized(uint8_t data);
+void deserialize(uint8_t data);
+void startObservingPackage();
+void closePackage();
 
 // logging
+#ifdef LOGGER_RX
 void mainReset(uint32_t timestamp);
 void compA_IR(uint32_t timestamp);
 void compB_IR(uint32_t timestamp);
@@ -40,16 +52,12 @@ void entryState(uint32_t state, uint32_t timestamp);
 void debugMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
 void infoMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
 void errorMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
+#endif
 //==================================================================================
-void deserialize(uint8_t data);
-
-void startLoggingPackage(uint32_t timestamp);
-void startObservingPackage();
-void startControllingPackage();
-
-void closePackage();
 
 // logging:
+#ifdef LOGGER_TX
+void startLoggingPackage(uint32_t timestamp);
 // - events
 void addToPackage_MainReset();
 void addToPackage_CompA_IR();
@@ -79,8 +87,42 @@ void addToPackage_CycleTime(int32_t cycletime);
 void addToPackage_DebugMsg(uint8_t msg[]);
 void addToPackage_InfoMsg(uint8_t msg[]);
 void addToPackage_ErrorMsg(uint8_t msg[]);
-
-// observing
-
-// controlli
 #endif
+
+// ========== OPERATOR ================================================================
+#ifdef OPERATOR_RX
+//functions has to be implemented from user:
+void enableSerialOperationgMode();
+void enableDriver();
+void disableDriver();
+void selectPositiveTorque();
+void selectNegativeTorque();
+
+void setPositiveTorqueLevel(uint8_t level);
+void setNegativeTorqueLevel(uint8_t level);
+void setMaxPhaseCurrent(uint8_t current);
+
+void setTiming(int8_t timing);
+void setRotorPosController_pParam(uint32_t pParam);
+void setRotorPosController_iParam(uint32_t iParam);
+#endif
+#ifdef OPERATOR_TX
+// _____________________________________________________________________________________
+void operator_startPackage();
+
+void operator_EnableSerialOperatingMode();
+void operator_EnableDriver();
+void operator_DisableDriver();
+void operator_SelectPositiveTorque();
+void operator_SelectNegativeTorque();
+
+void operator_SetPositiveTorqueLevel(uint8_t level);
+void operator_SetNegativeTorqueLevel(uint8_t level);
+void operator_SetMaxPhaseCurrent(uint8_t level);
+
+void operator_SetTiming(uint8_t timing);
+void operator_SetRotorPosController_pParam(uint32_t pParam);
+void operator_SetRotorPosController_iParam(uint32_t iParam);
+#endif
+
+#endif /* INC_BLDCDRIVERSERIALIZER_H_ */
