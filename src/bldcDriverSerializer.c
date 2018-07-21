@@ -57,114 +57,118 @@
 // =============== Function declarations =================================
 
 // =============== TX ====================================================
-void startLoggingPackage(uint32_t timestamp){
+void startLoggingPackage(uint32_t timestamp) {
 	send_startFlag();
 	send_unsigned(timestamp);
 }
-void startObservingPackage(){
+void startObservingPackage() {
 	send_startFlag();
 }
-void startControllingPackage(){
+void startControllingPackage() {
 	send_startFlag();
 }
 
-void closePackage(){
+void closePackage() {
 	send_endFlag();
 }
 
 // logging
 // - events
-void addToPackage_MainReset(){
+void addToPackage_MainReset() {
 	send_attribute(ATTR_MAIN_RESET);
 }
-void addToPackage_CompA_IR(){
+void addToPackage_CompA_IR() {
 	send_attribute(ATTR_COMP_A_IRQ);
 }
-void addToPackage_CompB_IR(){
+void addToPackage_CompB_IR() {
 	send_attribute(ATTR_COMP_B_IRQ);
 }
-void addToPackage_CompC_IR(){
+void addToPackage_CompC_IR() {
 	send_attribute(ATTR_COMP_C_IRQ);
 }
-void addToPackage_LoggerBufferOverflow(){
+void addToPackage_LoggerBufferOverflow() {
 	send_attribute(ATTR_LOG_BUFFER_OVERFLOW);
 }
 
 // - numbers
-void addToPackage_CurrentA(int32_t current){
+void addToPackage_CurrentA(int32_t current) {
 	send_attribute(ATTR_CURRENT_A);
 	send_signed(current);
 }
-void addToPackage_CurrentB(int32_t current){
+void addToPackage_CurrentB(int32_t current) {
 	send_attribute(ATTR_CURRENT_B);
 	send_signed(current);
 }
-void addToPackage_CurrentRangeA(uint32_t range){
+void addToPackage_CurrentRangeA(uint32_t range) {
 	send_attribute(ATTR_CURRENT_A_RANGE);
 	send_unsigned(range);
 }
-void addToPackage_CurrentRangeB(uint32_t range){
+void addToPackage_CurrentRangeB(uint32_t range) {
 	send_attribute(ATTR_CURRENT_B_RANGE);
 	send_unsigned(range);
 }
-void addToPackage_AbsCurrentSetPoint(uint32_t setpoint){
+void addToPackage_AbsCurrentSetPoint(uint32_t setpoint) {
 	send_attribute(ATTR_ABS_PHASECURRENT_SETPOINT);
 	send_unsigned(setpoint);
 }
-void addToPackage_DutyCycle(uint32_t dutyCycle){
+void addToPackage_DutyCycle(uint32_t dutyCycle) {
 	send_attribute(ATTR_DUTYCYCLE);
 	send_unsigned(dutyCycle);
 }
-void addToPackage_CurrentControllerOutput(int32_t controllerOut){
+void addToPackage_CurrentControllerOutput(int32_t controllerOut) {
 	send_attribute(ATTR_CURRENT_CONTROLER_OUT);
 	send_signed(controllerOut);
 }
 
-void addToPackage_AbsRotorPosEncoder(uint32_t pos){
+void addToPackage_AbsRotorPosEncoder(uint32_t pos) {
 	send_attribute(ATTR_ROTORPOS_ENCODER_ABS);
 	send_unsigned(pos);
 }
-void addToPackage_RotorPosEncoder(int32_t pos){
+void addToPackage_RotorPosEncoder(int32_t pos) {
 	send_attribute(ATTR_ROTORPOS_ENCODER);
 	send_signed(pos);
 }
-void addToPackage_RotorPosSensorless(int32_t pos){
+void addToPackage_RotorPosSensorless(int32_t pos) {
 	send_attribute(ATTR_ROTORPOS_SENSORLESS);
 	send_signed(pos);
 }
-void addToPackage_RotorPosControllerOutput(int32_t controllerOut){
+void addToPackage_RotorPosControllerOutput(int32_t controllerOut) {
 	send_attribute(ATTR_ROTORPOS_CONTROLLER_OUT);
 	send_signed(controllerOut);
 }
 
-void addToPackage_Time60Deg(int32_t t60deg){
+void addToPackage_EntryState(uint32_t state) {
+	send_attribute(ATTR_ENTRY_STATE);
+	send_signed(state);
+}
+void addToPackage_Time60Deg(int32_t t60deg) {
 	send_attribute(ATTR_TIME_60DEG);
 	send_signed(t60deg);
 }
-void addToPackage_CycleTime(int32_t cycletime){
+void addToPackage_CycleTime(int32_t cycletime) {
 	send_attribute(ATTR_CYCLE_TIME);
 	send_signed(cycletime);
 }
 
 // - messages
-void addToPackage_DebugMsg(uint8_t msg[]){
+void addToPackage_DebugMsg(uint8_t msg[]) {
 	send_attribute(ATTR_MSG_DEBUG);
 	send_string(msg);
 }
-void addToPackage_InfoMsg(uint8_t msg[]){
+void addToPackage_InfoMsg(uint8_t msg[]) {
 	send_attribute(ATTR_MSG_INFO);
 	send_string(msg);
 }
-void addToPackage_ErrorMsg(uint8_t msg[]){
+void addToPackage_ErrorMsg(uint8_t msg[]) {
 	send_attribute(ATTR_MSG_ERROR);
 	send_string(msg);
 }
 
 // RX
-void eventReceived(uint32_t timestamp, uint8_t symbol){
-	switch(symbol){
+void eventReceived(uint32_t timestamp, uint8_t symbol) {
+	switch (symbol) {
 	case ATTR_MAIN_RESET:
-		loggerBufferOverflow(timestamp);
+		mainReset(timestamp);
 		break;
 	case ATTR_COMP_A_IRQ:
 		compA_IR(timestamp);
@@ -183,23 +187,24 @@ void eventReceived(uint32_t timestamp, uint8_t symbol){
 		break;
 	}
 }
-void msgReceived(uint32_t timestamp, uint8_t symbol, uint8_t msg[], uint8_t lenght){
+void msgReceived(uint32_t timestamp, uint8_t symbol, uint8_t msg[],
+		uint8_t lenght) {
 	switch (symbol) {
-		case ATTR_MSG_DEBUG:
-			debugMsg(msg, lenght, timestamp);
-			break;
-		case ATTR_MSG_INFO:
-			infoMsg(msg, lenght, timestamp);
-					break;
-		case ATTR_MSG_ERROR:
-			errorMsg(msg, lenght, timestamp);
-					break;
-		default:
-			break;
+	case ATTR_MSG_DEBUG:
+		debugMsg(msg, lenght, timestamp);
+		break;
+	case ATTR_MSG_INFO:
+		infoMsg(msg, lenght, timestamp);
+		break;
+	case ATTR_MSG_ERROR:
+		errorMsg(msg, lenght, timestamp);
+		break;
+	default:
+		break;
 	}
 }
-void unsignedReceived(uint32_t timestamp, uint8_t symbol, uint32_t data){
-	switch(symbol){
+void unsignedReceived(uint32_t timestamp, uint8_t symbol, uint32_t data) {
+	switch (symbol) {
 	case ATTR_CURRENT_A_RANGE:
 		currentRangeA(data, timestamp);
 		break;
@@ -229,60 +234,58 @@ void unsignedReceived(uint32_t timestamp, uint8_t symbol, uint32_t data){
 		break;
 	}
 }
-void signedReceived(uint32_t timestamp, uint8_t symbol, uint32_t data){
-	switch(symbol){
-		case ATTR_CURRENT_A:
-			currentA(data, timestamp);
-			break;
-		case ATTR_CURRENT_B:
-			currentB(data, timestamp);
-			break;
-		case ATTR_CURRENT_CONTROLER_OUT:
-			currentControllerOutput(data, timestamp);
-			break;
-		case ATTR_ROTORPOS_SENSORLESS:
-			rotorPosEncoder(data, timestamp);
-			break;
-		case ATTR_ROTORPOS_CONTROLLER_OUT:
-			rotorPosSensorless(data, timestamp);
-			break;
-		default:
-			// do nothing
-			break;
-		}
+void signedReceived(uint32_t timestamp, uint8_t symbol, uint32_t data) {
+	switch (symbol) {
+	case ATTR_CURRENT_A:
+		currentA(data, timestamp);
+		break;
+	case ATTR_CURRENT_B:
+		currentB(data, timestamp);
+		break;
+	case ATTR_CURRENT_CONTROLER_OUT:
+		currentControllerOutput(data, timestamp);
+		break;
+	case ATTR_ROTORPOS_ENCODER:
+		rotorPosEncoder(data, timestamp);
+		break;
+	case ATTR_ROTORPOS_SENSORLESS:
+		rotorPosSensorless(data, timestamp);
+		break;
+	case ATTR_ROTORPOS_CONTROLLER_OUT:
+		rotorPosControllerOutput(data, timestamp);
+		break;
+	default:
+		// do nothing
+		break;
+	}
 }
 
-uint8_t is_a_event_attribute(uint8_t data){
-	return (data == ATTR_MAIN_RESET ||
-			data == ATTR_COMP_A_IRQ ||
-			data == ATTR_COMP_B_IRQ ||
-			data == ATTR_COMP_C_IRQ ||
-			data == ATTR_LOG_BUFFER_OVERFLOW);
+uint8_t is_a_event_attribute(uint8_t data) {
+	return (data == ATTR_MAIN_RESET || data == ATTR_COMP_A_IRQ
+			|| data == ATTR_COMP_B_IRQ || data == ATTR_COMP_C_IRQ
+			|| data == ATTR_LOG_BUFFER_OVERFLOW);
 }
-uint8_t is_a_msg_attribute(uint8_t data){
-	return (data == ATTR_MSG_DEBUG ||
-				data == ATTR_MSG_INFO ||
-				data == ATTR_MSG_ERROR);
+uint8_t is_a_msg_attribute(uint8_t data) {
+	return (data == ATTR_MSG_DEBUG || data == ATTR_MSG_INFO
+			|| data == ATTR_MSG_ERROR);
 }
-uint8_t is_a_unsigned_attribute(uint8_t data){
-	return (data == ATTR_CURRENT_A_RANGE ||
-				data == ATTR_CURRENT_B_RANGE ||
-				data == ATTR_ABS_PHASECURRENT_SETPOINT ||
-				data == ATTR_DUTYCYCLE ||
-				data == ATTR_ROTORPOS_ENCODER_ABS ||
-				data == ATTR_TIME_60DEG ||
-				data == ATTR_CYCLE_TIME ||
-				data == ATTR_ENTRY_STATE);
+uint8_t is_a_unsigned_attribute(uint8_t data) {
+	return (data == ATTR_CURRENT_A_RANGE || data == ATTR_CURRENT_B_RANGE
+			|| data == ATTR_ABS_PHASECURRENT_SETPOINT || data == ATTR_DUTYCYCLE
+			|| data == ATTR_ROTORPOS_ENCODER_ABS || data == ATTR_TIME_60DEG
+			|| data == ATTR_CYCLE_TIME || data == ATTR_ENTRY_STATE);
 }
-uint8_t is_a_signed_attribute(uint8_t data){
-	return (data == ATTR_CURRENT_A ||
-				data == ATTR_CURRENT_B ||
-				data == ATTR_CURRENT_CONTROLER_OUT ||
-				data == ATTR_ROTORPOS_ENCODER ||
-				data == ATTR_ROTORPOS_SENSORLESS ||
-				data == ATTR_ROTORPOS_CONTROLLER_OUT);
+uint8_t is_a_signed_attribute(uint8_t data) {
+	return (data == ATTR_CURRENT_A || data == ATTR_CURRENT_B
+			|| data == ATTR_CURRENT_CONTROLER_OUT
+			|| data == ATTR_ROTORPOS_ENCODER || data == ATTR_ROTORPOS_SENSORLESS
+			|| data == ATTR_ROTORPOS_CONTROLLER_OUT);
 }
 
-void send(uint8_t data){
-	transferByte(data);
+void send(uint8_t data) {
+	handleSerialized(data);
+}
+
+void deserialize(uint8_t data) {
+	decode(data);
 }

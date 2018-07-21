@@ -24,6 +24,8 @@ uint8_t is_a_signed_attribute(uint8_t data);
 void send(uint8_t data);
 //==================================================================================
 
+void decode(uint8_t data);
+
 void send_startFlag();
 void send_endFlag();
 void send_attribute(uint8_t attr);

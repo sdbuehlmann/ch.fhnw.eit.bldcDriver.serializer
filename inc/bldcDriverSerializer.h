@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 //========== functions has to be implemented from user =============================
-void transferByte(uint8_t data);
+void handleSerialized(uint8_t data);
 
 // logging
 void mainReset(uint32_t timestamp);
@@ -41,6 +41,7 @@ void debugMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
 void infoMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
 void errorMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
 //==================================================================================
+void deserialize(uint8_t data);
 
 void startLoggingPackage(uint32_t timestamp);
 void startObservingPackage();

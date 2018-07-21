@@ -41,7 +41,6 @@ static uint8_t lastAttribute = 0;
 // =============== Function pointers =====================================
 
 // =============== Function declarations =================================
-void decode(uint8_t data);
 void changeState(uint8_t attribute);
 
 // =============== Functions =============================================
