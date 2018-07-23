@@ -10,57 +10,62 @@
 
 // =============== Defines ===============================================
 // __start flags__
-#define LOGGER_START_FLAG						1
-#define OPERATOR_START_FLAG						2
-#define OBSERVER_START_FLAG						3
+#define LOGGER_START_FLAG						START_CONTROL_FLAG_X
+#define SET_LOGGER_FLAG							send_startFlagX()
+
+#define OPERATOR_START_FLAG						START_CONTROL_FLAG_Y
+#define SET_OPERATOR_FLAG						send_startFlagY()
+
+#define OBSERVER_START_FLAG						START_CONTROL_FLAG_Z
+#define SET_OBSERVER_FLAG						send_startFlagZ()
 
 // __logger attributes__
 // events
-#define ATTR_MAIN_RESET							3
-#define ATTR_COMP_A_IRQ 						4
-#define ATTR_COMP_B_IRQ							5
-#define ATTR_COMP_C_IRQ 						6
-#define ATTR_LOG_BUFFER_OVERFLOW 				7
+#define ATTR_MAIN_RESET							FIRST_ATTRIBUTE_CHAR
+#define ATTR_COMP_A_IRQ 						ATTR_MAIN_RESET + 1
+#define ATTR_COMP_B_IRQ							ATTR_COMP_A_IRQ + 1
+#define ATTR_COMP_C_IRQ 						ATTR_COMP_B_IRQ + 1
+#define ATTR_LOG_BUFFER_OVERFLOW 				ATTR_COMP_C_IRQ + 1
 
 // strings
-#define ATTR_MSG_DEBUG 							8
-#define ATTR_MSG_INFO 							9
-#define ATTR_MSG_ERROR 							10
+#define ATTR_MSG_DEBUG 							ATTR_LOG_BUFFER_OVERFLOW + 1
+#define ATTR_MSG_INFO 							ATTR_MSG_DEBUG + 1
+#define ATTR_MSG_ERROR 							ATTR_MSG_INFO + 1
 
 // data
-#define ATTR_CURRENT_A 							11
-#define ATTR_CURRENT_B							12
-#define ATTR_CURRENT_A_RANGE 					13
-#define ATTR_CURRENT_B_RANGE 					14
-#define ATTR_ABS_PHASECURRENT_SETPOINT			15
-#define ATTR_DUTYCYCLE							17
-#define ATTR_CURRENT_CONTROLER_OUT				18
+#define ATTR_CURRENT_A 							ATTR_MSG_ERROR + 1
+#define ATTR_CURRENT_B							ATTR_CURRENT_A + 1
+#define ATTR_CURRENT_A_RANGE 					ATTR_CURRENT_B + 1
+#define ATTR_CURRENT_B_RANGE 					ATTR_CURRENT_A_RANGE + 1
+#define ATTR_ABS_PHASECURRENT_SETPOINT			ATTR_CURRENT_B_RANGE + 1
+#define ATTR_DUTYCYCLE							ATTR_ABS_PHASECURRENT_SETPOINT + 1
+#define ATTR_CURRENT_CONTROLER_OUT				ATTR_DUTYCYCLE + 1
 
-#define ATTR_ROTORPOS_ENCODER_ABS				20
-#define ATTR_ROTORPOS_ENCODER					21
-#define ATTR_ROTORPOS_SENSORLESS				22
-#define ATTR_TIME_60DEG							23
-#define ATTR_ROTORPOS_CONTROLLER_OUT			24
+#define ATTR_ROTORPOS_ENCODER_ABS				ATTR_CURRENT_CONTROLER_OUT + 1
+#define ATTR_ROTORPOS_ENCODER					ATTR_ROTORPOS_ENCODER_ABS + 1
+#define ATTR_ROTORPOS_SENSORLESS				ATTR_ROTORPOS_ENCODER + 1
+#define ATTR_TIME_60DEG							ATTR_ROTORPOS_SENSORLESS + 1
+#define ATTR_ROTORPOS_CONTROLLER_OUT			ATTR_TIME_60DEG + 1
 
-#define ATTR_CYCLE_TIME							25
-#define ATTR_ENTRY_STATE						27
+#define ATTR_CYCLE_TIME							ATTR_ROTORPOS_CONTROLLER_OUT + 1
+#define ATTR_ENTRY_STATE						ATTR_CYCLE_TIME + 1
 
 // __operator attributes__
 // events
-#define ATTR_ENABLE_SERIAL_OPERATING			3
-#define ATTR_ENABLE_DRIVER						4
-#define ATTR_DISABLE_DRIVER						5
-#define ATTR_SELECT_POS_TORQUE		 			6
-#define ATTR_SELECT_NEG_TORQUE		 			7
+#define ATTR_ENABLE_SERIAL_OPERATING			FIRST_ATTRIBUTE_CHAR
+#define ATTR_ENABLE_DRIVER						ATTR_ENABLE_SERIAL_OPERATING + 1
+#define ATTR_DISABLE_DRIVER						ATTR_ENABLE_DRIVER + 1
+#define ATTR_SELECT_POS_TORQUE		 			ATTR_DISABLE_DRIVER + 1
+#define ATTR_SELECT_NEG_TORQUE		 			ATTR_SELECT_POS_TORQUE + 1
 
 // unsigned
-#define ATTR_SET_POS_TORQUE_LEVEL 				8
-#define ATTR_SET_NEG_TORQUE_LEVEL				9
-#define ATTR_SET_MAX_PHASE_CURRENT				10
+#define ATTR_SET_POS_TORQUE_LEVEL 				ATTR_SELECT_NEG_TORQUE + 1
+#define ATTR_SET_NEG_TORQUE_LEVEL				ATTR_SET_POS_TORQUE_LEVEL + 1
+#define ATTR_SET_MAX_PHASE_CURRENT				ATTR_SET_NEG_TORQUE_LEVEL + 1
 
-#define ATTR_TIMING 							11
-#define ATTR_ROTORPOS_CONT_P_PARAM				12
-#define ATTR_ROTORPOS_CONT_I_PARAM				13
+#define ATTR_TIMING 							ATTR_SET_MAX_PHASE_CURRENT + 1
+#define ATTR_ROTORPOS_CONT_P_PARAM				ATTR_TIMING + 1
+#define ATTR_ROTORPOS_CONT_I_PARAM				ATTR_ROTORPOS_CONT_P_PARAM + 1
 
 // =============== Variables =============================================
 
@@ -71,7 +76,7 @@
 // =============== TX ====================================================
 
 void startObservingPackage() {
-	send_startFlag2();
+	SET_OBSERVER_FLAG;
 }
 
 void closePackage() {
@@ -82,7 +87,7 @@ void closePackage() {
 // logger
 #ifdef LOGGER_TX
 void startLoggingPackage(uint32_t timestamp) {
-	send_startFlag1();
+	SET_LOGGER_FLAG;
 	send_unsigned(timestamp);
 }
 
@@ -180,7 +185,7 @@ void addToPackage_ErrorMsg(uint8_t msg[]) {
 
 #ifdef OPERATOR_TX
 void operator_startPackage(){
-	send_startFlag2();
+	SET_OPERATOR_FLAG;
 }
 
 void operator_EnableSerialOperatingMode(){
@@ -201,29 +206,29 @@ void operator_SelectNegativeTorque(){
 
 void operator_SetPositiveTorqueLevel(uint8_t level){
 	send_attribute(ATTR_SET_POS_TORQUE_LEVEL);
-	send_unsigned(level);
+	send_unsigned(level, 1);
 	/* ToDo unterscheidung von 8bit & 32bit --> sonst Fehler beim Maskieren (Es werden benachbarte Speicherplätze mitgesendet) */
 }
 void operator_SetNegativeTorqueLevel(uint8_t level){
 	send_attribute(ATTR_SET_NEG_TORQUE_LEVEL);
-	send_unsigned(level);
+	send_unsigned(level, 1);
 }
 void operator_SetMaxPhaseCurrent(uint8_t level){
 	send_attribute(ATTR_SET_MAX_PHASE_CURRENT);
-	send_unsigned(level);
+	send_unsigned(level, 1);
 }
 
 void operator_SetTiming(uint8_t timing){
 	send_attribute(ATTR_TIMING);
-	send_unsigned(timing);
+	send_unsigned(timing, 1);
 }
 void operator_SetRotorPosController_pParam(uint32_t pParam){
 	send_attribute(ATTR_ROTORPOS_CONT_P_PARAM);
-	send_unsigned(pParam);
+	send_unsigned(pParam, 4);
 }
 void operator_SetRotorPosController_iParam(uint32_t iParam){
 	send_attribute(ATTR_ROTORPOS_CONT_I_PARAM);
-	send_unsigned(iParam);
+	send_unsigned(iParam, 4);
 }
 #endif /* OPERATOR_TX */
 

@@ -6,13 +6,7 @@
 #include "serializer.h"
 
 // =============== Defines ===============================================
-#define START_CONTROL_FLAG_1							1
-#define START_CONTROL_FLAG_2							2
-#define START_CONTROL_FLAG_3							3
 #define END_CONTROL_FLAG								4
-
-#define FIRST_ATTRIBUTE_CHAR							5
-#define LAST_ATTRIBUTE_CHAR								31
 
 #define FIRST_ASCII_CHAR 								32
 #define LAST_ASCII_CHAR 								0b01111111
@@ -50,14 +44,15 @@ uint8_t is_a_control_flag(uint8_t data);
 void changeState(uint8_t attribute);
 
 // =============== Functions =============================================
-void send_startFlag1(){
-	store(START_CONTROL_FLAG_1);
+// serialize
+void send_startFlagX(){
+	store(START_CONTROL_FLAG_X);
 }
-void send_startFlag2(){
-	store(START_CONTROL_FLAG_1);
+void send_startFlagY(){
+	store(START_CONTROL_FLAG_Y);
 }
-void send_startFlag3(){
-	store(START_CONTROL_FLAG_1);
+void send_startFlagZ(){
+	store(START_CONTROL_FLAG_Z);
 }
 void send_endFlag(){
 	store(END_CONTROL_FLAG);
@@ -68,7 +63,7 @@ void send_attribute(uint8_t attr){
 void send_byte(uint8_t data){
 	store(data);
 }
-void send_unsigned(uint32_t number) {
+void send_unsigned(uint32_t number, uint8_t nrMaxBytes) {
 	for (uint32_t cnt = 0; cnt < 5; cnt++) {
 		uint8_t temp = number & 0b01111111; // store last 7 bits
 		temp = temp | 0b10000000; // set first bit
@@ -81,8 +76,8 @@ void send_unsigned(uint32_t number) {
 		}
 	}
 }
-void send_signed(int32_t number) {
-	send_unsigned((uint32_t) number);
+void send_signed(int32_t number, uint8_t nrMaxBytes) {
+	send_unsigned((uint32_t) number, nrMaxBytes);
 }
 void send_string(uint8_t *pMsg) {
 	while (1) {
@@ -96,6 +91,7 @@ void send_string(uint8_t *pMsg) {
 	}
 }
 
+// deserialize
 uint32_t decode_unsigned(uint8_t data[], uint8_t nrData) {
 	int32_t number = 0;
 
@@ -118,10 +114,9 @@ uint8_t is_a_number(uint8_t data) {
 	return (data >= FIRST_NUMBER);
 }
 uint8_t is_a_start_flag(uint8_t data){
-	return (data == START_CONTROL_FLAG_1 ||
-				data == START_CONTROL_FLAG_2 ||
-				data == START_CONTROL_FLAG_3 ||
-				data == END_CONTROL_FLAG);
+	return (data == START_CONTROL_FLAG_X ||
+				data == START_CONTROL_FLAG_Y ||
+				data == START_CONTROL_FLAG_Z);
 }
 uint8_t is_a_control_flag(uint8_t data) {
 	return (is_a_start_flag(data) ||
