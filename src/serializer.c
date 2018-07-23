@@ -6,6 +6,9 @@
 #include "serializer.h"
 
 // =============== Defines ===============================================
+#define START_CONTROL_FLAG_X							1
+#define START_CONTROL_FLAG_Y							2
+#define START_CONTROL_FLAG_Z							3
 #define END_CONTROL_FLAG								4
 
 #define FIRST_ASCII_CHAR 								32
@@ -15,60 +18,51 @@
 
 // =============== Typdefs ===============================================
 typedef enum {
-	standby,
-	receive_timestamp,
-	receive_event,
-	receive_msg,
-	receive_unsigned,
-	receive_signed
+	standby, receive_timestamp, receive_attr, receive_data
 } State;
 
 // =============== Variables =============================================
-State state = standby;
+static State state = standby;
 
 static uint8_t buffer[200];
 static uint8_t bufferCnt = 0;
 
-static uint32_t timestamp = 0;
+static uint32_t formatErrorCnt = 0;
+
+static uint8_t lastType = 0;
 static uint8_t lastAttribute = 0;
-static uint8_t lastStartFlag = 0;
+static uint32_t lastTimestamp = 0;
 
 // =============== Function pointers =====================================
 
 // =============== Function declarations =================================
-uint8_t is_a_number(uint8_t data);
-uint8_t is_a_ascii_char(uint8_t data);
-uint8_t is_a_start_flag(uint8_t data);
-uint8_t is_a_control_flag(uint8_t data);
-
-void changeState(uint8_t attribute);
 
 // =============== Functions =============================================
 // serialize
-void send_startFlagX(){
-	store(START_CONTROL_FLAG_X);
+void send_startFlagX() {
+	addToStream(START_CONTROL_FLAG_X);
 }
-void send_startFlagY(){
-	store(START_CONTROL_FLAG_Y);
+void send_startFlagY() {
+	addToStream(START_CONTROL_FLAG_Y);
 }
-void send_startFlagZ(){
-	store(START_CONTROL_FLAG_Z);
+void send_startFlagZ() {
+	addToStream(START_CONTROL_FLAG_Z);
 }
-void send_endFlag(){
-	store(END_CONTROL_FLAG);
+void send_endFlag() {
+	addToStream(END_CONTROL_FLAG);
 }
-void send_attribute(uint8_t attr){
-	store(attr);
+void send_attribute(uint8_t attr) {
+	addToStream(attr);
 }
-void send_byte(uint8_t data){
-	store(data);
+void send_byte(uint8_t data) {
+	addToStream(data);
 }
 void send_unsigned(uint32_t number, uint8_t nrMaxBytes) {
 	for (uint32_t cnt = 0; cnt < 5; cnt++) {
 		uint8_t temp = number & 0b01111111; // store last 7 bits
 		temp = temp | 0b10000000; // set first bit
 
-		store(temp);
+		addToStream(temp);
 
 		number = number >> 7; // unsigned --> zeros added
 		if (number == 0) {
@@ -85,7 +79,7 @@ void send_string(uint8_t *pMsg) {
 			return;
 		}
 
-		store(*pMsg);
+		addToStream(*pMsg);
 
 		pMsg++;
 	}
@@ -109,110 +103,94 @@ uint32_t decode_unsigned(uint8_t data[], uint8_t nrData) {
 int32_t decode_signed(uint8_t data[], uint8_t nrData) {
 	return (int32_t) decode_unsigned(data, nrData);
 }
-
-uint8_t is_a_number(uint8_t data) {
-	return (data >= FIRST_NUMBER);
-}
-uint8_t is_a_start_flag(uint8_t data){
-	return (data == START_CONTROL_FLAG_X ||
-				data == START_CONTROL_FLAG_Y ||
-				data == START_CONTROL_FLAG_Z);
-}
-uint8_t is_a_control_flag(uint8_t data) {
-	return (is_a_start_flag(data) ||
-				data == END_CONTROL_FLAG);
-}
-uint8_t is_a_ascii_char(uint8_t data) {
-	return (data >= FIRST_ASCII_CHAR && data <= LAST_ASCII_CHAR);
+uint8_t * decode_string(uint8_t data[], uint8_t nrData){
+	return data;
 }
 
-void changeState(uint8_t attribute) {
-	lastAttribute = attribute;
-	bufferCnt = 0;
 
-	if (is_a_event_attribute(lastStartFlag, attribute)) {
-		state = receive_event;
-	} else if (is_a_unsigned_attribute(lastStartFlag, attribute)) {
-		state = receive_unsigned;
-	} else if (is_a_signed_attribute(lastStartFlag, attribute)) {
-		state = receive_signed;
-	} else if (is_a_msg_attribute(lastStartFlag, attribute)) {
-		state = receive_msg;
-	} else {
-		timestamp = 0;
-		state = standby;
-	}
+uint8_t is_start_flag(uint8_t data) {
+	return (data == START_CONTROL_FLAG_X || data == START_CONTROL_FLAG_Y
+			|| data == START_CONTROL_FLAG_Z);
+}
+uint8_t is_end_flag(uint8_t data) {
+	return (data == END_CONTROL_FLAG);
+}
+uint8_t is_payload(uint8_t data) {
+	return (data >= FIRST_ASCII_CHAR || data == 0);
+}
+uint8_t is_attribute(uint8_t data) {
+	return (data >= FIRST_ATTRIBUTE_CHAR && data <= LAST_ATTRIBUTE_CHAR);
 }
 
-void decode(uint8_t receivedByte) {
+void deserialize(uint8_t receivedByte) {
 	switch (state) {
 	case standby: {
-		if (is_a_start_flag(receivedByte)) {
-			lastStartFlag = receivedByte;
+		if (is_start_flag(receivedByte)) {
+			lastType = receivedByte;
+
 			state = receive_timestamp;
 		}
 	}
 		break;
+
 	case receive_timestamp: {
-		if (is_a_number(receivedByte)) {
+		if (is_payload(receivedByte)) {
 			buffer[bufferCnt] = receivedByte;
 			bufferCnt++;
+		} else {
+			lastTimestamp = decode_unsigned(buffer, bufferCnt);
+			bufferCnt = 0;
 
-			return;
+			state = receive_attr;
+
+			deserialize(receivedByte); // recursion
 		}
 
-		timestamp = decode_unsigned(buffer, bufferCnt);
-
-		changeState(receivedByte);
-
 	}
 		break;
-	case receive_event: {
-		eventReceived(timestamp, lastStartFlag, lastAttribute);
 
-		changeState(receivedByte);
+	case receive_attr: {
+		if (is_attribute(receivedByte)) {
+			lastAttribute = receivedByte;
+
+			state = receive_data;
+		} else if (is_end_flag(receivedByte)) {
+			state = standby;
+		} else {
+			// error: invalid format
+			formatErrorCnt++;
+
+			state = standby;
+		}
 	}
 		break;
-	case receive_msg: {
-		if (is_a_ascii_char(receivedByte)) {
+
+	case receive_data: {
+		if (is_payload(receivedByte)) {
 			buffer[bufferCnt] = receivedByte;
 			bufferCnt++;
+		} else {
 
-			return;
+			switch (lastType) {
+			case START_CONTROL_FLAG_X:
+				handleDataFromXPackage(lastAttribute, lastTimestamp, buffer, bufferCnt);
+				break;
+			case START_CONTROL_FLAG_Y:
+				handleDataFromYPackage(lastAttribute, lastTimestamp, buffer, bufferCnt);
+				break;
+			case START_CONTROL_FLAG_Z:
+				handleDataFromZPackage(lastAttribute, lastTimestamp, buffer, bufferCnt);
+				break;
+			}
+
+			state = receive_attr;
+			lastAttribute = 0;
+			bufferCnt = 0;
+
+			deserialize(receivedByte); // recursion
 		}
-
-		msgReceived(timestamp, lastStartFlag, lastAttribute, buffer, bufferCnt);
-
-		changeState(receivedByte);
 	}
 		break;
-	case receive_unsigned: {
-		if (is_a_number(receivedByte)) {
-			buffer[bufferCnt] = receivedByte;
-			bufferCnt++;
 
-			return;
-		}
-
-		uint32_t value = decode_unsigned(buffer, bufferCnt);
-		unsignedReceived(timestamp, lastStartFlag, lastAttribute, value);
-
-		changeState(receivedByte);
-	}
-		break;
-	case receive_signed: {
-		if (is_a_number(receivedByte)) {
-			buffer[bufferCnt] = receivedByte;
-			bufferCnt++;
-
-			return;
-		}
-
-		int32_t value = decode_signed(buffer, bufferCnt);
-		signedReceived(timestamp, lastStartFlag, lastAttribute, value);
-
-		changeState(receivedByte);
-	}
-		break;
 	}
 }

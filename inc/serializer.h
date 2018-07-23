@@ -11,28 +11,19 @@
 #include <stdint.h>
 
 // =============== Defines ===============================================
-#define START_CONTROL_FLAG_X							1
-#define START_CONTROL_FLAG_Y							2
-#define START_CONTROL_FLAG_Z							3
-
 #define FIRST_ATTRIBUTE_CHAR							5
 #define LAST_ATTRIBUTE_CHAR								31
 
 //========== functions has to be implemented from user =============================
-void eventReceived(uint32_t timestamp, uint8_t startFlag, uint8_t symbol);
-void msgReceived(uint32_t timestamp, uint8_t startFlag, uint8_t symbol, uint8_t msg[], uint8_t lenght);
-void unsignedReceived(uint32_t timestamp, uint8_t startFlag, uint8_t symbol, uint32_t data);
-void signedReceived(uint32_t timestamp, uint8_t startFlag, uint8_t symbol, uint32_t data);
 
-uint8_t is_a_event_attribute(uint8_t startFlag, uint8_t data);
-uint8_t is_a_msg_attribute(uint8_t startFlag, uint8_t data);
-uint8_t is_a_unsigned_attribute(uint8_t startFlag, uint8_t data);
-uint8_t is_a_signed_attribute(uint8_t startFlag, uint8_t data);
+void handleDataFromXPackage(uint8_t attr, uint32_t timestamp, uint8_t data[], uint8_t nrData);
+void handleDataFromYPackage(uint8_t attr, uint32_t timestamp, uint8_t data[], uint8_t nrData);
+void handleDataFromZPackage(uint8_t attr, uint32_t timestamp, uint8_t data[], uint8_t nrData);
 
-void store(uint8_t data);
+void addToStream(uint8_t data);
 //==================================================================================
 
-void decode(uint8_t data);
+void deserialize(uint8_t data);
 
 void send_startFlagX();
 void send_startFlagY();
@@ -46,5 +37,6 @@ void send_string(uint8_t *pMsg);
 
 uint32_t decode_unsigned(uint8_t data[], uint8_t nrData);
 int32_t decode_signed(uint8_t data[], uint8_t nrData);
+uint8_t * decode_string(uint8_t data[], uint8_t nrData);
 
 #endif /* INC_SERIALIZER_H_ */

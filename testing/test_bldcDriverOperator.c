@@ -5,7 +5,6 @@
  *      Author: simon
  */
 
-
 /*
  * test_bldcDriverSerializer.c
  *
@@ -19,6 +18,7 @@
 #include <assert.h>
 
 #include "bldcDriverSerializer.h"
+#include "bldcDriverSerializer_operator.h"
 
 // =============== Defines ===============================================
 
@@ -26,13 +26,13 @@
 static uint8_t buffer[500];
 static uint8_t bufferCnt = 0;
 
-static uint8_t serialized_posTorqueLevel = 123;
-static uint8_t serialized_negTorqueLevel = -321;
+static uint8_t serialized_posTorqueLevel = 75;
+static uint8_t serialized_negTorqueLevel = 23;
 static uint8_t serialized_maxPhaseCurrent = 31;
 
 static uint8_t serialized_timing = 11;
 static uint8_t serialized_rotPosContPParam = 165;
-static uint8_t serialized_rotPosContIParam = 1089;
+static uint8_t serialized_rotPosContIParam = 65;
 
 // flags
 static uint8_t flag_enableSerialOperatingMode = 0;
@@ -54,26 +54,26 @@ static uint8_t flag_rotPosContIParam = 0;
 
 // =============== Functions =============================================
 int main(void) {
-	operator_startPackage();
+	startOperatorPackage();
 
-	 operator_EnableSerialOperatingMode();
-	 operator_EnableDriver();
-	 operator_DisableDriver();
-	 operator_SelectPositiveTorque();
-	 operator_SelectNegativeTorque();
+	add_EnableSerialOperatingMode();
+	add_EnableDriver();
+	add_DisableDriver();
+	add_SelectPositiveTorque();
+	add_SelectNegativeTorque();
 
-	 operator_SetPositiveTorqueLevel(serialized_posTorqueLevel);
-	 operator_SetNegativeTorqueLevel(serialized_negTorqueLevel);
-	 operator_SetMaxPhaseCurrent(serialized_maxPhaseCurrent);
+	add_SetPositiveTorqueLevel(serialized_posTorqueLevel);
+	add_SetNegativeTorqueLevel(serialized_negTorqueLevel);
+	add_SetMaxPhaseCurrent(serialized_maxPhaseCurrent);
 
-	 operator_SetTiming(serialized_timing);
-	 operator_SetRotorPosController_pParam(serialized_rotPosContPParam);
-	 operator_SetRotorPosController_iParam(serialized_rotPosContIParam);
+	add_SetTiming(serialized_timing);
+	add_SetRotorPosController_pParam(serialized_rotPosContPParam);
+	add_SetRotorPosController_iParam(serialized_rotPosContIParam);
 
 	closePackage();
 
 	for (uint8_t cnt = 0; cnt < bufferCnt; cnt++) {
-		deserialize(buffer[cnt]);
+		handleIncomming(buffer[cnt]);
 	}
 
 	// check flags
@@ -93,49 +93,49 @@ int main(void) {
 	printf("passed all tests successfully");
 }
 
-void handleSerialized(uint8_t data) {
+void handleOutgoing(uint8_t data) {
 	buffer[bufferCnt] = data;
 	bufferCnt++;
 }
 
-void enableSerialOperationgMode(){
+void enableSerialOperationgMode() {
 	flag_enableSerialOperatingMode = 1;
 }
-void enableDriver(){
+void enableDriver() {
 	flag_enableDriver = 1;
 }
-void disableDriver(){
+void disableDriver() {
 	flag_disableDriver = 1;
 }
-void selectPositiveTorque(){
+void selectPositiveTorque() {
 	flag_selectPositiveTorque = 1;
 }
-void selectNegativeTorque(){
+void selectNegativeTorque() {
 	flag_selectNegativeTorque = 1;
 }
 
-void setPositiveTorqueLevel(uint8_t level){
+void setPositiveTorqueLevel(uint8_t level) {
 	assert(level == serialized_posTorqueLevel);
 	flag_posTorqueLevel = 1;
 }
-void setNegativeTorqueLevel(uint8_t level){
+void setNegativeTorqueLevel(uint8_t level) {
 	assert(level == serialized_negTorqueLevel);
 	flag_negTorqueLevel = 1;
 }
-void setMaxPhaseCurrent(uint8_t current){
+void setMaxPhaseCurrent(uint8_t current) {
 	assert(current == serialized_maxPhaseCurrent);
 	flag_maxPhaseCurrent = 1;
 }
 
-void setTiming(int8_t timing){
+void setTiming(int8_t timing) {
 	assert(timing == serialized_timing);
 	flag_timing = 1;
 }
-void setRotorPosController_pParam(uint32_t pParam){
+void setRotorPosController_pParam(uint32_t pParam) {
 	assert(pParam == serialized_rotPosContPParam);
 	flag_rotPosContPParam = 1;
 }
-void setRotorPosController_iParam(uint32_t iParam){
+void setRotorPosController_iParam(uint32_t iParam) {
 	assert(iParam == serialized_rotPosContIParam);
 	flag_rotPosContIParam = 1;
 }

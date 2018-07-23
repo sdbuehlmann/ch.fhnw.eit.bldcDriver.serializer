@@ -11,6 +11,7 @@
 #include <assert.h>
 
 #include "bldcDriverSerializer.h"
+#include "bldcDriverSerializer_logger.h"
 
 // =============== Defines ===============================================
 
@@ -77,39 +78,39 @@ static uint8_t flag_errorMsg = 0;
 int main(void) {
 	startLoggingPackage(serialized_timestamp);
 
-	addToPackage_MainReset();
-	addToPackage_CompA_IR();
-	addToPackage_CompB_IR();
-	addToPackage_CompC_IR();
-	addToPackage_LoggerBufferOverflow();
+	add_MainReset();
+	add_CompA_IR();
+	add_CompB_IR();
+	add_CompC_IR();
+	add_LoggerBufferOverflow();
 
 	// - numbers
-	addToPackage_CurrentA(serialized_currentA);
-	addToPackage_CurrentB(serialized_currentB);
-	addToPackage_CurrentRangeA(serialized_currentRangeA);
-	addToPackage_CurrentRangeB(serialized_currentRangeB);
-	addToPackage_AbsCurrentSetPoint(serialized_absCurrentSP);
-	addToPackage_DutyCycle(serialized_dutyCycle);
-	addToPackage_CurrentControllerOutput(serialized_currentContOut);
+	add_CurrentA(serialized_currentA);
+	add_CurrentB(serialized_currentB);
+	add_CurrentRangeA(serialized_currentRangeA);
+	add_CurrentRangeB(serialized_currentRangeB);
+	add_AbsCurrentSetPoint(serialized_absCurrentSP);
+	add_DutyCycle(serialized_dutyCycle);
+	add_CurrentControllerOutput(serialized_currentContOut);
 
-	addToPackage_AbsRotorPosEncoder(serialized_absRotPosEncoder);
-	addToPackage_RotorPosEncoder(serialized_rotPosEncoder);
-	addToPackage_RotorPosSensorless(serialized_rotPosSensLess);
-	addToPackage_RotorPosControllerOutput(serialized_rotPosContOut);
+	add_AbsRotorPosEncoder(serialized_absRotPosEncoder);
+	add_RotorPosEncoder(serialized_rotPosEncoder);
+	add_RotorPosSensorless(serialized_rotPosSensLess);
+	add_RotorPosControllerOutput(serialized_rotPosContOut);
 
-	addToPackage_EntryState(serialized_entryState);
-	addToPackage_Time60Deg(serialized_t60Deg);
-	addToPackage_CycleTime(serialized_cycletime);
+	add_EntryState(serialized_entryState);
+	add_Time60Deg(serialized_t60Deg);
+	add_CycleTime(serialized_cycletime);
 
 	// - messages
-	addToPackage_DebugMsg(serialized_debugMsg);
-	addToPackage_InfoMsg(serialized_infoMsg);
-	addToPackage_ErrorMsg(serialized_errorMsg);
+	add_DebugMsg(serialized_debugMsg);
+	add_InfoMsg(serialized_infoMsg);
+	add_ErrorMsg(serialized_errorMsg);
 
 	closePackage();
 
 	for (uint8_t cnt = 0; cnt < bufferCnt; cnt++) {
-		deserialize(buffer[cnt]);
+		handleIncomming(buffer[cnt]);
 	}
 
 	// check flags
@@ -144,7 +145,7 @@ int main(void) {
 	printf("passed all tests successfully");
 }
 
-void handleSerialized(uint8_t data) {
+void handleOutgoing(uint8_t data) {
 	buffer[bufferCnt] = data;
 	bufferCnt++;
 }
