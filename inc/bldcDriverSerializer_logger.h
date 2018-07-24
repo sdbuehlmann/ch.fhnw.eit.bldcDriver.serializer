@@ -12,11 +12,11 @@
 
 // ____RX____ (if supported, functions has to be implemented from user)
 #ifdef LOGGER_RX
-void mainReset(uint32_t timestamp);
+
+void loggingIsEnabled(uint32_t timestamp);
 void compA_IR(uint32_t timestamp);
 void compB_IR(uint32_t timestamp);
 void compC_IR(uint32_t timestamp);
-void loggerBufferOverflow(uint32_t timestamp);
 
 void currentA(int32_t current, uint32_t timestamp);
 void currentB(int32_t current, uint32_t timestamp);
@@ -33,7 +33,7 @@ void rotorPosControllerOutput(int32_t controllerOut, uint32_t timestamp);
 
 void time60Deg(int32_t t60deg, uint32_t timestamp);
 void cycleTime(int32_t cycletime, uint32_t timestamp);
-void entryState(uint32_t state, uint32_t timestamp);
+void loggingConfiguration(uint32_t config, uint32_t timestamp);
 
 void debugMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
 void infoMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
@@ -42,37 +42,33 @@ void errorMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
 
 // ____TX____
 #ifdef LOGGER_TX
-void startLoggingPackage(uint32_t timestamp);
+void startLoggingPackage();
 
-// events
-void add_MainReset();
-void add_CompA_IR();
-void add_CompB_IR();
-void add_CompC_IR();
-void add_LoggerBufferOverflow();
+void add_loggingIsEnabled();
+void add_compA_IR();
+void add_compB_IR();
+void add_compC_IR();
 
-// numbers
-void add_CurrentA(int32_t current);
-void add_CurrentB(int32_t current);
-void add_CurrentRangeA(uint32_t range);
-void add_CurrentRangeB(uint32_t range);
-void add_AbsCurrentSetPoint(uint32_t setpoint);
-void add_DutyCycle(uint32_t dutyCycle);
-void add_CurrentControllerOutput(int32_t controllerOut);
+void add_currentA(int32_t current);
+void add_currentB(int32_t current);
+void add_currentRangeA(uint32_t range);
+void add_currentRangeB(uint32_t range);
+void add_absCurrentSetPoint(uint32_t setpoint);
+void add_dutyCycle(uint32_t dutyCycle);
+void add_currentControllerOutput(int32_t controllerOut);
 
-void add_AbsRotorPosEncoder(uint32_t pos);
-void add_RotorPosEncoder(int32_t pos);
-void add_RotorPosSensorless(int32_t pos);
-void add_RotorPosControllerOutput(int32_t controllerOut);
+void add_absRotorPosEncoder(uint32_t pos);
+void add_rotorPosEncoder(int32_t pos);
+void add_rotorPosSensorless(int32_t pos);
+void add_rotorPosControllerOutput(int32_t controllerOut);
 
-void add_EntryState(uint32_t state);
-void add_Time60Deg(int32_t t60deg);
-void add_CycleTime(int32_t cycletime);
+void add_time60Deg(int32_t t60deg);
+void add_cycleTime(int32_t cycletime);
+void add_loggingConfiguration(uint32_t config);
 
-// messages
-void add_DebugMsg(uint8_t msg[]);
-void add_InfoMsg(uint8_t msg[]);
-void add_ErrorMsg(uint8_t msg[]);
+void add_debugMsg(uint8_t msg[], uint8_t lenght);
+void add_infoMsg(uint8_t msg[], uint8_t lenght);
+void add_errorMsg(uint8_t msg[], uint8_t lenght);
 #endif
 
 #endif /* INC_BLDCDRIVERSERIALIZER_LOGGER_H_ */

@@ -9,30 +9,11 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "test.h"
 #include "bldcDriverSerializer.h"
 #include "bldcDriverSerializer_observer.h"
 
 // =============== Defines ===============================================
-
-typedef struct {
-	uint8_t value;
-	uint8_t flag;
-} NrAttr_uint8;
-typedef struct {
-	int8_t value;
-	uint8_t flag;
-} NrAttr_int8;
-typedef struct {
-	uint32_t value;
-	uint8_t flag;
-} NrAttr_uint32;
-typedef struct {
-	int32_t value;
-	uint8_t flag;
-} NrAttr_int32;
-typedef struct {
-	uint8_t flag;
-} EventAttr;
 
 // =============== Variables =============================================
 static uint8_t buffer[500];
