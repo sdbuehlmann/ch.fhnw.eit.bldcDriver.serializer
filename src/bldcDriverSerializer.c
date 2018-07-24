@@ -51,20 +51,26 @@
 
 // __operator attributes_________________________________________________________________________
 // events
-#define ATTR_ENABLE_SERIAL_OPERATING						ATTR_1
-#define ATTR_ENABLE_DRIVER									ATTR_2
-#define ATTR_DISABLE_DRIVER									ATTR_3
-#define ATTR_SELECT_POS_TORQUE		 						ATTR_4
-#define ATTR_SELECT_NEG_TORQUE		 						ATTR_5
+#define OPR_ATTR_ENABLE_SERIAL_OPERATING					ATTR_1
+#define OPR_ATTR_ENABLELOGGING								ATTR_2
+#define OPR_ATTR_ENABLE_DRIVER								ATTR_3
+#define OPR_ATTR_DISABLE_DRIVER								ATTR_4
+#define OPR_ATTR_SELECT_POS_TORQUE		 					ATTR_5
+#define OPR_ATTR_SELECT_NEG_TORQUE		 					ATTR_6
+#define OPR_ATTR_SET_ROTADE_CLOCKWISE		 				ATTR_7
+#define OPR_ATTR_SET_ROTADE_COUNTERCLOCKWISE		 		ATTR_8
+#define OPR_ATTR_GET_OBSERVING_INFOS		 				ATTR_9
+#define OPR_ATTR_GET_LOGGING_CONFIG		 					ATTR_10
 
 // unsigned
-#define ATTR_SET_POS_TORQUE_LEVEL 							ATTR_6
-#define ATTR_SET_NEG_TORQUE_LEVEL							ATTR_7
-#define ATTR_SET_MAX_PHASE_CURRENT							ATTR_8
+#define OPR_ATTR_SET_POS_TORQUE_LEVEL 						ATTR_11
+#define OPR_ATTR_SET_NEG_TORQUE_LEVEL						ATTR_12
+#define OPR_ATTR_SET_MAX_PHASE_CURRENT						ATTR_13
 
-#define ATTR_TIMING 										ATTR_9
-#define ATTR_SET_ROTORPOS_CONT_P_PARAM						ATTR_10
-#define ATTR_SET_ROTORPOS_CONT_I_PARAM						ATTR_11
+#define OPR_ATTR_TIMING 									ATTR_14
+#define OPR_ATTR_SET_ROTORPOS_CONT_P_PARAM					ATTR_15
+#define OPR_ATTR_SET_ROTORPOS_CONT_I_PARAM					ATTR_16
+#define OPR_ATTR_SET_LOGGING_CONFIG							ATTR_17
 
 // __observer attributes_________________________________________________________________________
 // events
@@ -99,78 +105,78 @@ void HANDLE_LOGGER_DATA(uint8_t attr, uint32_t timestamp, uint8_t data[],
 #ifdef LOGGER_RX
 
 	switch (attr) {
-	// events
-	case LOG_ATTR_LOGGING_ENABLED:
+		// events
+		case LOG_ATTR_LOGGING_ENABLED:
 		loggingIsEnabled(timestamp);
 		break;
-	case LOG_ATTR_COMP_A_IRQ:
+		case LOG_ATTR_COMP_A_IRQ:
 		compA_IR(timestamp);
 		break;
-	case LOG_ATTR_COMP_B_IRQ:
+		case LOG_ATTR_COMP_B_IRQ:
 		compB_IR(timestamp);
 		break;
-	case LOG_ATTR_COMP_C_IRQ:
+		case LOG_ATTR_COMP_C_IRQ:
 		compC_IR(timestamp);
 		break;
 
 		// string
-	case LOG_ATTR_MSG_DEBUG:
+		case LOG_ATTR_MSG_DEBUG:
 		debugMsg(decode_string(data, nrData), nrData, timestamp);
 		break;
-	case LOG_ATTR_MSG_INFO:
+		case LOG_ATTR_MSG_INFO:
 		infoMsg(decode_string(data, nrData), nrData, timestamp);
 		break;
-	case LOG_ATTR_MSG_ERROR:
+		case LOG_ATTR_MSG_ERROR:
 		errorMsg(decode_string(data, nrData), nrData, timestamp);
 		break;
 
 		// unsigned
-	case LOG_ATTR_CURRENT_A_RANGE:
+		case LOG_ATTR_CURRENT_A_RANGE:
 		currentRangeA(decode_unsigned(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_CURRENT_B_RANGE:
+		case LOG_ATTR_CURRENT_B_RANGE:
 		currentRangeB(decode_unsigned(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_ABS_PHASECURRENT_SETPOINT:
+		case LOG_ATTR_ABS_PHASECURRENT_SETPOINT:
 		absCurrentSetPoint(decode_unsigned(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_DUTYCYCLE:
+		case LOG_ATTR_DUTYCYCLE:
 		dutyCycle(decode_unsigned(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_ROTORPOS_ENCODER_ABS:
+		case LOG_ATTR_ROTORPOS_ENCODER_ABS:
 		absRotorPosEncoder(decode_unsigned(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_TIME_60DEG:
+		case LOG_ATTR_TIME_60DEG:
 		time60Deg(decode_unsigned(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_CYCLE_TIME:
+		case LOG_ATTR_CYCLE_TIME:
 		cycleTime(decode_unsigned(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_LOGGING_CONFIGURATION:
+		case LOG_ATTR_LOGGING_CONFIGURATION:
 		loggingConfiguration(decode_unsigned(data, nrData), timestamp);
 		break;
 
 		// signed
-	case LOG_ATTR_CURRENT_A:
+		case LOG_ATTR_CURRENT_A:
 		currentA(decode_signed(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_CURRENT_B:
+		case LOG_ATTR_CURRENT_B:
 		currentB(decode_signed(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_CURRENT_CONTROLER_OUT:
+		case LOG_ATTR_CURRENT_CONTROLER_OUT:
 		currentControllerOutput(decode_signed(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_ROTORPOS_ENCODER:
+		case LOG_ATTR_ROTORPOS_ENCODER:
 		rotorPosEncoder(decode_signed(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_ROTORPOS_SENSORLESS:
+		case LOG_ATTR_ROTORPOS_SENSORLESS:
 		rotorPosSensorless(decode_signed(data, nrData), timestamp);
 		break;
-	case LOG_ATTR_ROTORPOS_CONTROLLER_OUT:
+		case LOG_ATTR_ROTORPOS_CONTROLLER_OUT:
 		rotorPosControllerOutput(decode_signed(data, nrData), timestamp);
 		break;
 
-	default:
+		default:
 		// do nothing
 		break;
 	}
@@ -182,48 +188,66 @@ void HANDLE_OPERATOR_DATA(uint8_t attr, uint32_t timestamp, uint8_t data[],
 #ifdef OPERATOR_RX
 
 	switch (attr) {
-		// events
-		case ATTR_ENABLE_SERIAL_OPERATING:
+	// events
+	case OPR_ATTR_ENABLE_SERIAL_OPERATING:
 		enableSerialOperationgMode();
 		break;
-		case ATTR_ENABLE_DRIVER:
+	case OPR_ATTR_ENABLELOGGING:
+		enableLogging();
+		break;
+	case OPR_ATTR_ENABLE_DRIVER:
 		enableDriver();
 		break;
-		case ATTR_DISABLE_DRIVER:
+	case OPR_ATTR_DISABLE_DRIVER:
 		disableDriver();
 		break;
-		case ATTR_SELECT_POS_TORQUE:
+	case OPR_ATTR_SELECT_POS_TORQUE:
 		selectPositiveTorque();
 		break;
-		case ATTR_SELECT_NEG_TORQUE:
+	case OPR_ATTR_SELECT_NEG_TORQUE:
 		selectNegativeTorque();
+		break;
+	case OPR_ATTR_SET_ROTADE_CLOCKWISE:
+		rotadeClockwise();
+		break;
+	case OPR_ATTR_SET_ROTADE_COUNTERCLOCKWISE:
+		rotadeCounterclockwise();
+		break;
+	case OPR_ATTR_GET_OBSERVING_INFOS:
+		getObservingInfos();
+		break;
+	case OPR_ATTR_GET_LOGGING_CONFIG:
+		getLoggingConfig();
 		break;
 
 		// string -> no attributes
 
 		// unsigned
-		case ATTR_SET_POS_TORQUE_LEVEL:
+	case OPR_ATTR_SET_POS_TORQUE_LEVEL:
 		setPositiveTorqueLevel((uint8_t) decode_unsigned(data, nrData));
 		break;
-		case ATTR_SET_NEG_TORQUE_LEVEL:
+	case OPR_ATTR_SET_NEG_TORQUE_LEVEL:
 		setNegativeTorqueLevel((uint8_t) decode_unsigned(data, nrData));
 		break;
-		case ATTR_SET_MAX_PHASE_CURRENT:
+	case OPR_ATTR_SET_MAX_PHASE_CURRENT:
 		setMaxPhaseCurrent((uint8_t) decode_unsigned(data, nrData));
 		break;
-		case ATTR_TIMING:
+	case OPR_ATTR_TIMING:
 		setTiming((uint8_t) decode_unsigned(data, nrData));
 		break;
-		case ATTR_SET_ROTORPOS_CONT_P_PARAM:
-		setRotorPosController_pParam((uint8_t) decode_unsigned(data, nrData));
+	case OPR_ATTR_SET_ROTORPOS_CONT_P_PARAM:
+		setRotorPosController_pParam((uint32_t) decode_unsigned(data, nrData));
 		break;
-		case ATTR_SET_ROTORPOS_CONT_I_PARAM:
-		setRotorPosController_iParam((uint8_t) decode_unsigned(data, nrData));
+	case OPR_ATTR_SET_ROTORPOS_CONT_I_PARAM:
+		setRotorPosController_iParam((uint32_t) decode_unsigned(data, nrData));
+		break;
+	case OPR_ATTR_SET_LOGGING_CONFIG:
+		setLoggingConfig(decode_unsigned(data, nrData));
 		break;
 
 		// signed -> no attributes
 
-		default:
+	default:
 		// do nothing
 		break;
 	}
@@ -325,7 +349,7 @@ void startLoggingPackage(uint32_t timestamp) {
 }
 
 // - events
-void add_loggingIsEnabled(){
+void add_loggingIsEnabled() {
 	send_attribute(LOG_ATTR_LOGGING_ENABLED);
 }
 void add_CompA_IR() {
@@ -393,7 +417,7 @@ void add_CycleTime(int32_t cycletime) {
 	send_attribute(LOG_ATTR_CYCLE_TIME);
 	send_signed(cycletime, 4);
 }
-void add_loggingConfiguration(uint32_t config){
+void add_loggingConfiguration(uint32_t config) {
 	send_attribute(LOG_ATTR_LOGGING_CONFIGURATION);
 	send_signed(config, 4);
 }
@@ -417,47 +441,66 @@ void add_ErrorMsg(uint8_t msg[]) {
 void startOperatorPackage() {
 	START_OPERATOR_PACKAGE();
 }
-
-void add_EnableSerialOperatingMode() {
-	send_attribute(ATTR_ENABLE_SERIAL_OPERATING);
+/* ToDo: https://git-scm.com/book/de/v1/Git-Tools-Submodule */
+void add_enableSerialOperatingMode() {
+	send_attribute(OPR_ATTR_ENABLE_SERIAL_OPERATING);
+}
+void add_enableLogging(){
+	send_attribute(OPR_ATTR_ENABLELOGGING);
 }
 void add_EnableDriver() {
-	send_attribute(ATTR_ENABLE_DRIVER);
+	send_attribute(OPR_ATTR_ENABLE_DRIVER);
 }
 void add_DisableDriver() {
-	send_attribute(ATTR_DISABLE_DRIVER);
+	send_attribute(OPR_ATTR_DISABLE_DRIVER);
 }
 void add_SelectPositiveTorque() {
-	send_attribute(ATTR_SELECT_POS_TORQUE);
+	send_attribute(OPR_ATTR_SELECT_POS_TORQUE);
 }
 void add_SelectNegativeTorque() {
-	send_attribute(ATTR_SELECT_NEG_TORQUE);
+	send_attribute(OPR_ATTR_SELECT_NEG_TORQUE);
+}
+void add_rotadeClockwise(){
+	send_attribute(OPR_ATTR_SET_ROTADE_CLOCKWISE);
+}
+void add_rotadeCounterclockwise(){
+	send_attribute(OPR_ATTR_SET_ROTADE_COUNTERCLOCKWISE);
+}
+void add_getObservingInfos(){
+	send_attribute(OPR_ATTR_GET_OBSERVING_INFOS);
+}
+void add_getLoggingConfig(){
+	send_attribute(OPR_ATTR_GET_LOGGING_CONFIG);
 }
 
 void add_SetPositiveTorqueLevel(uint8_t level) {
-	send_attribute(ATTR_SET_POS_TORQUE_LEVEL);
+	send_attribute(OPR_ATTR_SET_POS_TORQUE_LEVEL);
 	send_unsigned(level, 1);
 }
 void add_SetNegativeTorqueLevel(uint8_t level) {
-	send_attribute(ATTR_SET_NEG_TORQUE_LEVEL);
+	send_attribute(OPR_ATTR_SET_NEG_TORQUE_LEVEL);
 	send_unsigned(level, 1);
 }
 void add_SetMaxPhaseCurrent(uint8_t level) {
-	send_attribute(ATTR_SET_MAX_PHASE_CURRENT);
+	send_attribute(OPR_ATTR_SET_MAX_PHASE_CURRENT);
 	send_unsigned(level, 1);
 }
 
 void add_SetTiming(uint8_t timing) {
-	send_attribute(ATTR_TIMING);
+	send_attribute(OPR_ATTR_TIMING);
 	send_unsigned(timing, 1);
 }
 void add_SetRotorPosController_pParam(uint32_t pParam) {
-	send_attribute(ATTR_SET_ROTORPOS_CONT_P_PARAM);
+	send_attribute(OPR_ATTR_SET_ROTORPOS_CONT_P_PARAM);
 	send_unsigned(pParam, 4);
 }
 void add_SetRotorPosController_iParam(uint32_t iParam) {
-	send_attribute(ATTR_SET_ROTORPOS_CONT_I_PARAM);
+	send_attribute(OPR_ATTR_SET_ROTORPOS_CONT_I_PARAM);
 	send_unsigned(iParam, 4);
+}
+void add_setLoggingConfig(uint32_t config){
+	send_attribute(OPR_ATTR_SET_LOGGING_CONFIG);
+	send_unsigned(config, 4);
 }
 #endif /* OPERATOR_TX */
 

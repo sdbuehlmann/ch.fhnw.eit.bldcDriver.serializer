@@ -11,12 +11,12 @@
 #include <stdint.h>
 
 // ----configurate supported functions--------------
-#define LOGGER_RX
-#define LOGGER_TX
+//#define LOGGER_RX
+//#define LOGGER_TX
 //#define OBSERVER_RX
 //#define OBSERVER_TX
-//#define OPERATOR_RX
-//#define OPERATOR_TX
+#define OPERATOR_RX
+#define OPERATOR_TX
 // -------------------------------------------------
 
 // ----functions has to be implemented from user----
