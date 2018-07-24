@@ -11,6 +11,9 @@
 #define START_CONTROL_FLAG_Z							3
 #define END_CONTROL_FLAG								4
 
+#define FIRST_ATTRIBUTE									ATTR_1
+#define LAST_ATTRIBUTE									ATTR_27
+
 #define FIRST_ASCII_CHAR 								32
 #define LAST_ASCII_CHAR 								0b01111111
 
@@ -119,7 +122,7 @@ uint8_t is_payload(uint8_t data) {
 	return (data >= FIRST_ASCII_CHAR || data == 0);
 }
 uint8_t is_attribute(uint8_t data) {
-	return (data >= FIRST_ATTRIBUTE_CHAR && data <= LAST_ATTRIBUTE_CHAR);
+	return (data >= FIRST_ATTRIBUTE && data <= LAST_ATTRIBUTE);
 }
 
 void deserialize(uint8_t receivedByte) {

@@ -11,8 +11,34 @@
 #include <stdint.h>
 
 // =============== Defines ===============================================
-#define FIRST_ATTRIBUTE_CHAR							5
-#define LAST_ATTRIBUTE_CHAR								31
+#define ATTR_1											5
+#define ATTR_2											6
+#define ATTR_3											7
+#define ATTR_4											8
+#define ATTR_5		 									9
+#define ATTR_6		 									10
+#define ATTR_7		 									11
+#define ATTR_8		 									12
+#define ATTR_9											13
+#define ATTR_10											14
+#define ATTR_11 										15
+#define ATTR_12											16
+#define ATTR_13											17
+#define ATTR_14											18
+#define ATTR_15											19
+#define ATTR_16											20
+#define ATTR_17											21
+#define ATTR_18											22
+#define ATTR_19											23
+#define ATTR_20											24
+#define ATTR_21											25
+#define ATTR_22											26
+#define ATTR_23											27
+#define ATTR_24											28
+#define ATTR_25											29
+#define ATTR_26											30
+#define ATTR_27											31
+
 
 //========== functions has to be implemented from user =============================
 

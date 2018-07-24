@@ -76,6 +76,15 @@ static uint8_t flag_errorMsg = 0;
 
 // =============== Functions =============================================
 int main(void) {
+#ifndef LOGGER_TX
+	printf("logger TX not enabled");
+	assert(0);
+#endif /* LOGGER_TX */
+#ifndef LOGGER_RX
+	printf("logger RX not enabled");
+	assert(0);
+#endif /* LOGGER_TX */
+
 	startLoggingPackage(serialized_timestamp);
 
 	add_MainReset();
