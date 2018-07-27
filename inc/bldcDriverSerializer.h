@@ -9,15 +9,7 @@
 #define INC_BLDCDRIVERSERIALIZER_H_
 
 #include <stdint.h>
-
-// ----configurate supported functions--------------
-//#define LOGGER_RX
-//#define LOGGER_TX
-//#define OBSERVER_RX
-//#define OBSERVER_TX
-#define OPERATOR_RX
-#define OPERATOR_TX
-// -------------------------------------------------
+#include "serializerConfig.h"
 
 // ----functions has to be implemented from user----
 void handleOutgoing(uint8_t outData);
