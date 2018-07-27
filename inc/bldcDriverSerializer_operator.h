@@ -8,7 +8,7 @@
 #ifndef INC_BLDCDRIVERSERIALIZER_OPERATOR_H_
 #define INC_BLDCDRIVERSERIALIZER_OPERATOR_H_
 
-#include "bldcDriverSerializer.h"
+#include "serializerConfig.h"
 
 // ____RX____ (if supported, functions has to be implemented from user)
 #ifdef OPERATOR_RX

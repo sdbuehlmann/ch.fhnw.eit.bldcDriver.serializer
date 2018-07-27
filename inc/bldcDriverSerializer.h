@@ -9,7 +9,6 @@
 #define INC_BLDCDRIVERSERIALIZER_H_
 
 #include <stdint.h>
-#include "serializerConfig.h"
 
 // ----functions has to be implemented from user----
 void handleOutgoing(uint8_t outData);
