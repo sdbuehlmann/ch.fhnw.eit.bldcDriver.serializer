@@ -31,8 +31,8 @@ void rotorPosEncoder(int32_t pos, uint32_t timestamp);
 void rotorPosSensorless(int32_t pos, uint32_t timestamp);
 void rotorPosControllerOutput(int32_t controllerOut, uint32_t timestamp);
 
-void time60Deg(int32_t t60deg, uint32_t timestamp);
-void cycleTime(int32_t cycletime, uint32_t timestamp);
+void time60Deg(uint32_t t60deg, uint32_t timestamp);
+void cycleTime(uint32_t cycletime, uint32_t timestamp);
 void loggingConfiguration(uint32_t config, uint32_t timestamp);
 
 void debugMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp);
@@ -62,8 +62,8 @@ void add_rotorPosEncoder(int32_t pos);
 void add_rotorPosSensorless(int32_t pos);
 void add_rotorPosControllerOutput(int32_t controllerOut);
 
-void add_time60Deg(int32_t t60deg);
-void add_cycleTime(int32_t cycletime);
+void add_time60Deg(uint32_t t60deg);
+void add_cycleTime(uint32_t cycletime);
 void add_loggingConfiguration(uint32_t config);
 
 void add_debugMsg(uint8_t msg[], uint8_t lenght);
