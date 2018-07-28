@@ -4,13 +4,9 @@
 #include <stdio.h>
 
 #include "serializer.h"
+#include "serializerPrinter.h"
 
 // =============== Defines ===============================================
-#define START_CONTROL_FLAG_X							1
-#define START_CONTROL_FLAG_Y							2
-#define START_CONTROL_FLAG_Z							3
-#define END_CONTROL_FLAG								4
-
 #define FIRST_ATTRIBUTE									ATTR_1
 #define LAST_ATTRIBUTE									ATTR_27
 
@@ -106,14 +102,12 @@ uint32_t decode_unsigned(uint8_t data[], uint8_t nrData) {
 int32_t decode_signed(uint8_t data[], uint8_t nrData) {
 	return (int32_t) decode_unsigned(data, nrData);
 }
-uint8_t * decode_string(uint8_t data[], uint8_t nrData){
+uint8_t * decode_string(uint8_t data[], uint8_t nrData) {
 	return data;
 }
 
-
 uint8_t is_start_flag(uint8_t data) {
-	return (data == START_CONTROL_FLAG_X || data == START_CONTROL_FLAG_Y
-			|| data == START_CONTROL_FLAG_Z);
+	return (data == START_CONTROL_FLAG_X || data == START_CONTROL_FLAG_Y || data == START_CONTROL_FLAG_Z);
 }
 uint8_t is_end_flag(uint8_t data) {
 	return (data == END_CONTROL_FLAG);
@@ -126,11 +120,13 @@ uint8_t is_attribute(uint8_t data) {
 }
 
 void deserialize(uint8_t receivedByte) {
+
 	switch (state) {
 	case standby: {
 		if (is_start_flag(receivedByte)) {
 			lastType = receivedByte;
 
+			printControlFlag(lastType);
 			state = receive_timestamp;
 		}
 	}
@@ -140,6 +136,8 @@ void deserialize(uint8_t receivedByte) {
 		if (is_payload(receivedByte)) {
 			buffer[bufferCnt] = receivedByte;
 			bufferCnt++;
+
+			printBinary(receivedByte);
 		} else {
 			lastTimestamp = decode_unsigned(buffer, bufferCnt);
 			bufferCnt = 0;
@@ -156,8 +154,11 @@ void deserialize(uint8_t receivedByte) {
 		if (is_attribute(receivedByte)) {
 			lastAttribute = receivedByte;
 
+			printAttribute(receivedByte);
 			state = receive_data;
 		} else if (is_end_flag(receivedByte)) {
+			// end of package
+			printControlFlag(receivedByte);
 			state = standby;
 		} else {
 			// error: invalid format
@@ -172,6 +173,8 @@ void deserialize(uint8_t receivedByte) {
 		if (is_payload(receivedByte)) {
 			buffer[bufferCnt] = receivedByte;
 			bufferCnt++;
+
+			printBinary(receivedByte);
 		} else {
 
 			switch (lastType) {
@@ -197,3 +200,6 @@ void deserialize(uint8_t receivedByte) {
 
 	}
 }
+
+
+

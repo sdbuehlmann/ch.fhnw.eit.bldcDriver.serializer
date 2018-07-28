@@ -17,4 +17,5 @@ void handleOutgoing(uint8_t outData);
 void closePackage();
 void handleIncomming(uint8_t inData);
 
+
 #endif /* INC_BLDCDRIVERSERIALIZER_H_ */

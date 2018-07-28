@@ -6,6 +6,7 @@
  */
 // =============== Includes ==============================================
 #include "serializer.h"
+#include "bldcDriverSerializer.h"
 #include "bldcDriverSerializer_logger.h"
 #include "bldcDriverSerializer_operator.h"
 #include "bldcDriverSerializer_observer.h"
@@ -441,7 +442,6 @@ void add_ErrorMsg(uint8_t msg[]) {
 void startOperatorPackage() {
 	START_OPERATOR_PACKAGE();
 }
-/* ToDo: https://git-scm.com/book/de/v1/Git-Tools-Submodule */
 void add_enableSerialOperatingMode() {
 	send_attribute(OPR_ATTR_ENABLE_SERIAL_OPERATING);
 }

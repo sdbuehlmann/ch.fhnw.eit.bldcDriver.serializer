@@ -17,6 +17,8 @@
 // =============== Defines ===============================================
 
 // =============== Variables =============================================
+uint8_t serializerPrinterIsEnabled = 1; // enable/disable printer
+
 static uint8_t buffer[500];
 static uint8_t bufferCnt = 0;
 
@@ -275,4 +277,8 @@ void errorMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp) {
 		assert(msg[cnt] == temp->pValue[cnt]);
 	}
 	temp->flag = 1;
+}
+
+void print(char pTxt[]){
+	printf(pTxt);
 }

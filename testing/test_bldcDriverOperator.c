@@ -24,6 +24,8 @@
 // =============== Defines ===============================================
 
 // =============== Variables =============================================
+uint8_t serializerPrinterIsEnabled = 1; // enable/disable printer
+
 static uint8_t buffer[500];
 static uint8_t bufferCnt = 0;
 
@@ -197,4 +199,8 @@ void setLoggingConfig(uint32_t config) {
 	NrAttr_uint32 *temp = &setLoggingConfig_testvalue;
 	assert(config == temp->value);
 	temp->flag = 1;
+}
+
+void print(char pTxt[]){
+	printf(pTxt);
 }

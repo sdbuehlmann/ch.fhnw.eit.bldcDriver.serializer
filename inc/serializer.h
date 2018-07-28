@@ -11,6 +11,11 @@
 #include <stdint.h>
 
 // =============== Defines ===============================================
+#define START_CONTROL_FLAG_X							1
+#define START_CONTROL_FLAG_Y							2
+#define START_CONTROL_FLAG_Z							3
+#define END_CONTROL_FLAG								4
+
 #define ATTR_1											5
 #define ATTR_2											6
 #define ATTR_3											7
@@ -47,6 +52,8 @@ void handleDataFromYPackage(uint8_t attr, uint32_t timestamp, uint8_t data[], ui
 void handleDataFromZPackage(uint8_t attr, uint32_t timestamp, uint8_t data[], uint8_t nrData);
 
 void addToStream(uint8_t data);
+
+void print(char txt[]);
 //==================================================================================
 
 void deserialize(uint8_t data);
