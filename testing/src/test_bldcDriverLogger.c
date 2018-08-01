@@ -11,17 +11,12 @@
 #include <assert.h>
 
 #include "test.h"
-#include "bldcDriverSerializer.h"
 #include "bldcDriverSerializer_logger.h"
+#include "serializer.h"
 
 // =============== Defines ===============================================
 
 // =============== Variables =============================================
-uint8_t serializerPrinterIsEnabled = 1; // enable/disable printer
-
-static uint8_t buffer[500];
-static uint8_t bufferCnt = 0;
-
 static uint32_t timestamp_testvalue = 123456789;
 
 static EventAttr loggingIsEnabled_testvalue = { 0 };
@@ -44,8 +39,7 @@ static NrAttr_int32 rotorPosControllerOutput_testvalue = { -1, 0 };
 
 static NrAttr_int32 time60Deg_testvalue = { 18970, 0 };
 static NrAttr_int32 cycleTime_testvalue = { 158794, 0 };
-static NrAttr_uint32 loggingConfiguration_testvalue =
-		{ 0b101010101010101010, 0 };
+static NrAttr_uint32 loggingConfiguration_testvalue = { 0b101010101010101010, 0 };
 
 static StringAttr debugMsg_testvalue;
 static StringAttr infoMsg_testvalue;
@@ -56,7 +50,8 @@ static StringAttr errorMsg_testvalue;
 // =============== Function declarations =================================
 
 // =============== Functions =============================================
-int main(void) {
+// --------------- test.h ----------------------------------------------------------------------------------------
+void startTest_bldcDriverLogger() {
 #ifndef LOGGER_TX
 	printf("logger TX not enabled");
 	assert(0);
@@ -75,41 +70,38 @@ int main(void) {
 
 	startLoggingPackage(timestamp_testvalue);
 
-	add_loggingIsEnabled();
-	add_CompA_IR();
-	add_CompB_IR();
-	add_CompC_IR();
+	assert(add_loggingIsEnabled() == SUCCESSFUL);
+	assert(add_CompA_IR() == SUCCESSFUL);
+	assert(add_CompB_IR() == SUCCESSFUL);
+	assert(add_CompC_IR() == SUCCESSFUL);
 
 	// - numbers
-	add_CurrentA(currentA_testvalue.value);
-	add_CurrentB(currentB_testvalue.value);
-	add_CurrentRangeA(currentRangeA_testvalue.value);
-	add_CurrentRangeB(currentRangeB_testvalue.value);
-	add_AbsCurrentSetPoint(absCurrentSetPoint_testvalue.value);
-	add_DutyCycle(dutyCycle_testvalue.value);
-	add_CurrentControllerOutput(currentControllerOutput_testvalue.value);
+	assert(add_CurrentA(currentA_testvalue.value) == SUCCESSFUL);
+	assert(add_CurrentB(currentB_testvalue.value) == SUCCESSFUL);
+	assert(add_CurrentRangeA(currentRangeA_testvalue.value) == SUCCESSFUL);
+	assert(add_CurrentRangeB(currentRangeB_testvalue.value) == SUCCESSFUL);
+	assert(add_AbsCurrentSetPoint(absCurrentSetPoint_testvalue.value) == SUCCESSFUL);
+	assert(add_DutyCycle(dutyCycle_testvalue.value) == SUCCESSFUL);
+	assert(add_CurrentControllerOutput(currentControllerOutput_testvalue.value) == SUCCESSFUL);
 
-	add_AbsRotorPosEncoder(absRotorPosEncoder_testvalue.value);
-	add_RotorPosEncoder(rotorPosEncoder_testvalue.value);
-	add_RotorPosSensorless(rotorPosSensorless_testvalue.value);
-	add_RotorPosControllerOutput(rotorPosControllerOutput_testvalue.value);
+	assert(add_AbsRotorPosEncoder(absRotorPosEncoder_testvalue.value) == SUCCESSFUL);
+	assert(add_RotorPosEncoder(rotorPosEncoder_testvalue.value) == SUCCESSFUL);
+	assert(add_RotorPosSensorless(rotorPosSensorless_testvalue.value) == SUCCESSFUL);
+	assert(add_RotorPosControllerOutput(rotorPosControllerOutput_testvalue.value) == SUCCESSFUL);
 
-	add_Time60Deg(time60Deg_testvalue.value);
-	add_CycleTime(cycleTime_testvalue.value);
-	add_loggingConfiguration(loggingConfiguration_testvalue.value);
+	assert(add_Time60Deg(time60Deg_testvalue.value) == SUCCESSFUL);
+	assert(add_CycleTime(cycleTime_testvalue.value) == SUCCESSFUL);
+	assert(add_loggingConfiguration(loggingConfiguration_testvalue.value) == SUCCESSFUL);
 
 	// - messages
-	add_DebugMsg(debugMsg_testvalue.pValue);
-	add_InfoMsg(infoMsg_testvalue.pValue);
-	add_ErrorMsg(errorMsg_testvalue.pValue);
+	assert(add_DebugMsg(debugMsg_testvalue.pValue) == SUCCESSFUL);
+	assert(add_InfoMsg(infoMsg_testvalue.pValue) == SUCCESSFUL);
+	assert(add_ErrorMsg(errorMsg_testvalue.pValue) == SUCCESSFUL);
 
 	closePackage();
+}
 
-	for (uint8_t cnt = 0; cnt < bufferCnt; cnt++) {
-		handleIncomming(buffer[cnt]);
-	}
-
-	// check flags
+void analyzeFlags_bldcDriverLogger() {
 	assert(loggingIsEnabled_testvalue.flag);
 	assert(compA_IR_testvalue.flag);
 	assert(compB_IR_testvalue.flag);
@@ -135,16 +127,8 @@ int main(void) {
 	assert(debugMsg_testvalue.flag);
 	assert(infoMsg_testvalue.flag);
 	assert(errorMsg_testvalue.flag);
-
-	printf("passed all tests successfully");
 }
-
-void handleOutgoing(uint8_t data) {
-	buffer[bufferCnt] = data;
-	bufferCnt++;
-}
-
-// logging
+// --------------- bldcDriverSerializer_logger.h -----------------------------------------------------------------------
 void loggingIsEnabled(uint32_t timestamp) {
 	assert(timestamp == timestamp_testvalue);
 	EventAttr *temp = &loggingIsEnabled_testvalue;
@@ -235,13 +219,13 @@ void rotorPosControllerOutput(int32_t controllerOut, uint32_t timestamp) {
 	temp->flag = 1;
 }
 
-void time60Deg(int32_t t60deg, uint32_t timestamp) {
+void time60Deg(uint32_t t60deg, uint32_t timestamp) {
 	assert(timestamp == timestamp_testvalue);
 	NrAttr_int32 *temp = &time60Deg_testvalue;
 	assert(t60deg == temp->value);
 	temp->flag = 1;
 }
-void cycleTime(int32_t cycletime, uint32_t timestamp) {
+void cycleTime(uint32_t cycletime, uint32_t timestamp) {
 	assert(timestamp == timestamp_testvalue);
 	NrAttr_int32 *temp = &cycleTime_testvalue;
 	assert(cycletime == temp->value);
@@ -279,6 +263,3 @@ void errorMsg(uint8_t msg[], uint8_t lenght, uint32_t timestamp) {
 	temp->flag = 1;
 }
 
-void print(char pTxt[]){
-	printf(pTxt);
-}

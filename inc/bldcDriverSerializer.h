@@ -11,11 +11,10 @@
 #include <stdint.h>
 
 // ----functions has to be implemented from user----
-void handleOutgoing(uint8_t outData);
+
 // -------------------------------------------------
 
-void closePackage();
-void handleIncomming(uint8_t inData);
+
 
 
 #endif /* INC_BLDCDRIVERSERIALIZER_H_ */

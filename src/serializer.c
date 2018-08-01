@@ -15,73 +15,122 @@
 
 #define FIRST_NUMBER 									0b10000000
 
+#define MAX_PACKAGE_SIZE								255 //bytes
+
 // =============== Typdefs ===============================================
 typedef enum {
-	standby, receive_timestamp, receive_attr, receive_data
-} State;
+	deserializerState_deserializeID, deserializerState_deserializeAttr, deserializerState_deserializeData
+} DeserializerState;
+
+typedef enum {
+	bufferPackageState_waitForStartFlag, bufferPackageState_bufferIn
+} BufferPackageState;
 
 // =============== Variables =============================================
-static State state = standby;
-
-static uint8_t buffer[200];
-static uint8_t bufferCnt = 0;
-
+static BufferPackageState bufferPackageState = bufferPackageState_waitForStartFlag;
 static uint32_t formatErrorCnt = 0;
 
-static uint8_t lastType = 0;
-static uint8_t lastAttribute = 0;
-static uint32_t lastTimestamp = 0;
-
+static uint8_t outBuffer[MAX_PACKAGE_SIZE];
+static uint8_t outBufferCnt = 0;
 // =============== Function pointers =====================================
 
 // =============== Function declarations =================================
+static int8_t serializeUnsigned(uint32_t number);
+static int8_t serializeSigned(int32_t number);
+static int8_t serializeMsg(uint8_t *pMsg);
+static int8_t addToOutBuffer(uint8_t data);
+
+static uint8_t deserializePackage(uint8_t nrBytes, uint8_t packageBuffer[]);
 
 // =============== Functions =============================================
 // serialize
-void send_startFlagX() {
-	addToStream(START_CONTROL_FLAG_X);
-}
-void send_startFlagY() {
-	addToStream(START_CONTROL_FLAG_Y);
-}
-void send_startFlagZ() {
-	addToStream(START_CONTROL_FLAG_Z);
-}
-void send_endFlag() {
-	addToStream(END_CONTROL_FLAG);
-}
-void send_attribute(uint8_t attr) {
-	addToStream(attr);
-}
-void send_byte(uint8_t data) {
-	addToStream(data);
-}
-void send_unsigned(uint32_t number, uint8_t nrMaxBytes) {
+static int8_t serializeUnsigned(uint32_t number) {
 	for (uint32_t cnt = 0; cnt < 5; cnt++) {
 		uint8_t temp = number & 0b01111111; // store last 7 bits
 		temp = temp | 0b10000000; // set first bit
 
-		addToStream(temp);
+		if (addToOutBuffer(temp) != SUCCESSFUL) {
+			return ERROR;
+		}
 
 		number = number >> 7; // unsigned --> zeros added
 		if (number == 0) {
-			return;
+			return SUCCESSFUL;
 		}
 	}
+
+	return SUCCESSFUL;
 }
-void send_signed(int32_t number, uint8_t nrMaxBytes) {
-	send_unsigned((uint32_t) number, nrMaxBytes);
+static int8_t serializeSigned(int32_t number) {
+	return serializeUnsigned((uint32_t) number);
 }
-void send_string(uint8_t *pMsg) {
+static int8_t serializeMsg(uint8_t *pMsg) {
 	while (1) {
 		if (*pMsg == 0) {
-			return;
+			return SUCCESSFUL;
 		}
 
-		addToStream(*pMsg);
+		if (addToOutBuffer(*pMsg) != SUCCESSFUL) {
+			return ERROR;
+		}
 
 		pMsg++;
 	}
+}
+static int8_t addToOutBuffer(uint8_t data) {
+	if (outBufferCnt <= MAX_PACKAGE_SIZE) {
+		outBuffer[outBufferCnt] = data;
+		outBufferCnt++;
+
+		return SUCCESSFUL;
+	} else {
+		return ERROR;
+	}
+}
+
+void openXPackage(uint32_t packageID) {
+	outBuffer[0] = START_CONTROL_FLAG_X;
+	outBufferCnt = 1;
+	serializeUnsigned(packageID);
+}
+void openYPackage(uint32_t packageID) {
+	outBuffer[0] = START_CONTROL_FLAG_Y;
+	outBufferCnt = 1;
+	serializeUnsigned(packageID);
+}
+void openZPackage(uint32_t packageID) {
+	outBuffer[0] = START_CONTROL_FLAG_Z;
+	outBufferCnt = 1;
+	serializeUnsigned(packageID);
+}
+int8_t addEvent(uint8_t attr) {
+	return addToOutBuffer(attr);
+}
+int8_t addUnsigned(uint8_t attr, uint32_t number) {
+	if (addToOutBuffer(attr) != SUCCESSFUL || serializeUnsigned(number) != SUCCESSFUL) {
+		return ERROR;
+	}
+	return SUCCESSFUL;
+}
+int8_t addSigned(uint8_t attr, int32_t number) {
+	if (addToOutBuffer(attr) != SUCCESSFUL || serializeSigned(number) != SUCCESSFUL) {
+		return ERROR;
+	}
+	return SUCCESSFUL;
+}
+int8_t addMsg(uint8_t attr, uint8_t msg[]) {
+	if (addToOutBuffer(attr) != SUCCESSFUL || serializeMsg(msg) != SUCCESSFUL) {
+		return ERROR;
+	}
+	return SUCCESSFUL;
+}
+int8_t closePackage() {
+	if (addToOutBuffer(END_CONTROL_FLAG) != SUCCESSFUL) {
+		return ERROR;
+	}
+
+	handleOutgoingPackage(outBuffer, outBufferCnt);
+	return SUCCESSFUL;
 }
 
 // deserialize
@@ -119,87 +168,120 @@ uint8_t is_attribute(uint8_t data) {
 	return (data >= FIRST_ATTRIBUTE && data <= LAST_ATTRIBUTE);
 }
 
-void deserialize(uint8_t receivedByte) {
+uint8_t bufferIncommingData(uint8_t receivedByte) {
+	// buffer package
+	static uint8_t packageBuffer[MAX_PACKAGE_SIZE];
+	static uint8_t byteCnt;
 
-	switch (state) {
-	case standby: {
+	switch (bufferPackageState) {
+	case bufferPackageState_waitForStartFlag:
 		if (is_start_flag(receivedByte)) {
-			lastType = receivedByte;
+			// package start
+			byteCnt = 0;
+			packageBuffer[byteCnt] = receivedByte;
+			byteCnt++;
 
-			printControlFlag(lastType);
-			state = receive_timestamp;
+			bufferPackageState = bufferPackageState_bufferIn;
 		}
-	}
 		break;
 
-	case receive_timestamp: {
-		if (is_payload(receivedByte)) {
-			buffer[bufferCnt] = receivedByte;
-			bufferCnt++;
+	case bufferPackageState_bufferIn:
+		packageBuffer[byteCnt] = receivedByte;
+		byteCnt++;
 
-			printBinary(receivedByte);
-		} else {
-			lastTimestamp = decode_unsigned(buffer, bufferCnt);
-			bufferCnt = 0;
+		if (is_end_flag(receivedByte)) {
+			// package end
+			bufferPackageState = bufferPackageState_waitForStartFlag;
 
-			state = receive_attr;
-
-			deserialize(receivedByte); // recursion
+			deserializePackage(byteCnt, packageBuffer);
 		}
 
-	}
-		break;
-
-	case receive_attr: {
-		if (is_attribute(receivedByte)) {
-			lastAttribute = receivedByte;
-
-			printAttribute(receivedByte);
-			state = receive_data;
-		} else if (is_end_flag(receivedByte)) {
-			// end of package
-			printControlFlag(receivedByte);
-			state = standby;
-		} else {
-			// error: invalid format
-			formatErrorCnt++;
-
-			state = standby;
+		if (byteCnt > MAX_PACKAGE_SIZE) {
+			// package too big
+			bufferPackageState = bufferPackageState_waitForStartFlag;
+			return ERROR;
 		}
-	}
 		break;
-
-	case receive_data: {
-		if (is_payload(receivedByte)) {
-			buffer[bufferCnt] = receivedByte;
-			bufferCnt++;
-
-			printBinary(receivedByte);
-		} else {
-
-			switch (lastType) {
-			case START_CONTROL_FLAG_X:
-				handleDataFromXPackage(lastAttribute, lastTimestamp, buffer, bufferCnt);
-				break;
-			case START_CONTROL_FLAG_Y:
-				handleDataFromYPackage(lastAttribute, lastTimestamp, buffer, bufferCnt);
-				break;
-			case START_CONTROL_FLAG_Z:
-				handleDataFromZPackage(lastAttribute, lastTimestamp, buffer, bufferCnt);
-				break;
-			}
-
-			state = receive_attr;
-			lastAttribute = 0;
-			bufferCnt = 0;
-
-			deserialize(receivedByte); // recursion
-		}
 	}
-		break;
 
-	}
+	return 0;
 }
 
+uint8_t deserializePackage(uint8_t nrBytes, uint8_t packageBuffer[]) {
+	DeserializerState state = deserializerState_deserializeID;
 
+	uint8_t dataBuffer[MAX_PACKAGE_SIZE];
+	uint8_t dataBufferCnt = 0;
 
+	uint8_t lastAttribute = 0;
+	uint32_t id = 0;
+
+	printControlFlag(packageBuffer[0]);
+
+	for (uint8_t cnt = 1; cnt < nrBytes; cnt++) {
+		// receive package id
+		switch (state) {
+		case deserializerState_deserializeID:
+			if (is_payload(packageBuffer[cnt])) {
+				dataBuffer[dataBufferCnt] = packageBuffer[cnt];
+				dataBufferCnt++;
+
+				printBinary(packageBuffer[cnt]);
+			} else {
+				id = decode_unsigned(dataBuffer, dataBufferCnt);
+				dataBufferCnt = 0;
+
+				state = deserializerState_deserializeAttr;
+
+				cnt = cnt - 1; // same element from buffer again (is not id)
+			}
+			break;
+
+		case deserializerState_deserializeAttr:
+			if (is_attribute(packageBuffer[cnt])) {
+				lastAttribute = packageBuffer[cnt];
+
+				printAttribute(lastAttribute);
+				state = deserializerState_deserializeData;
+			} else if (is_end_flag(packageBuffer[cnt])) {
+				// end of package
+				printControlFlag(packageBuffer[cnt]);
+				return SUCCESSFUL;
+			} else {
+				// error: invalid format
+				formatErrorCnt++;
+				return ERROR;
+			}
+			break;
+
+		case deserializerState_deserializeData:
+			if (is_payload(packageBuffer[cnt])) {
+				dataBuffer[dataBufferCnt] = packageBuffer[cnt];
+				dataBufferCnt++;
+
+				printBinary(packageBuffer[cnt]);
+			} else {
+				switch (packageBuffer[0]) {
+				case START_CONTROL_FLAG_X:
+					handleXPackageData(id, lastAttribute, dataBuffer, dataBufferCnt);
+					break;
+				case START_CONTROL_FLAG_Y:
+					handleYPackageData(id, lastAttribute, dataBuffer, dataBufferCnt);
+					break;
+				case START_CONTROL_FLAG_Z:
+					handleZPackageData(id, lastAttribute, dataBuffer, dataBufferCnt);
+					break;
+				}
+
+				state = deserializerState_deserializeAttr;
+				lastAttribute = 0;
+				dataBufferCnt = 0;
+
+				cnt = cnt - 1; // same element from buffer again (is not payload)
+			}
+			break;
+		}
+	}
+
+	return SUCCESSFUL;
+}

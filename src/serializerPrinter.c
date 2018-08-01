@@ -129,9 +129,9 @@ void printBinary(uint8_t data) {
 
 		for (uint8_t cnt = 0; cnt < 8; cnt++) {
 			if (data & 0b00000001) {
-				buffer[cnt] = '1';
+				buffer[7-cnt] = '1';
 			} else {
-				buffer[cnt] = '0';
+				buffer[7-cnt] = '0';
 			}
 			data = data >> 1;
 		}

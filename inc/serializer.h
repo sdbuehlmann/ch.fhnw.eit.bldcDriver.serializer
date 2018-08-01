@@ -44,29 +44,28 @@
 #define ATTR_26											30
 #define ATTR_27											31
 
+#define ERROR											-1
+#define SUCCESSFUL										0
 
 //========== functions has to be implemented from user =============================
+void handleXPackageData(uint32_t packageID, uint8_t attr, uint8_t data[], uint8_t nrData);
+void handleYPackageData(uint32_t packageID, uint8_t attr, uint8_t data[], uint8_t nrData);
+void handleZPackageData(uint32_t packageID, uint8_t attr, uint8_t data[], uint8_t nrData);
 
-void handleDataFromXPackage(uint8_t attr, uint32_t timestamp, uint8_t data[], uint8_t nrData);
-void handleDataFromYPackage(uint8_t attr, uint32_t timestamp, uint8_t data[], uint8_t nrData);
-void handleDataFromZPackage(uint8_t attr, uint32_t timestamp, uint8_t data[], uint8_t nrData);
-
-void addToStream(uint8_t data);
-
-void print(char txt[]);
+void handleOutgoingPackage(uint8_t buffer[], uint8_t size);
 //==================================================================================
+uint8_t bufferIncommingData(uint8_t receivedByte);
 
-void deserialize(uint8_t data);
+void openXPackage(uint32_t packageID);
+void openYPackage(uint32_t packageID);
+void openZPackage(uint32_t packageID);
 
-void send_startFlagX();
-void send_startFlagY();
-void send_startFlagZ();
-void send_endFlag();
-void send_attribute(uint8_t attr);
-void send_byte(uint8_t data);
-void send_unsigned(uint32_t number, uint8_t nrMaxBytes);
-void send_signed(int32_t number, uint8_t nrMaxBytes);
-void send_string(uint8_t *pMsg);
+int8_t closePackage();
+
+int8_t addEvent(uint8_t attr);
+int8_t addUnsigned(uint8_t attr, uint32_t data);
+int8_t addSigned(uint8_t attr, int32_t data);
+int8_t addMsg(uint8_t attr, uint8_t msg[]);
 
 uint32_t decode_unsigned(uint8_t data[], uint8_t nrData);
 int32_t decode_signed(uint8_t data[], uint8_t nrData);

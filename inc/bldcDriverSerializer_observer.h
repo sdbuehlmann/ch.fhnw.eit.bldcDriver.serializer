@@ -37,25 +37,25 @@
 #ifdef OBSERVER_TX
 	void startObservingPackage(uint32_t timestamp);
 
-	void add_serialOperatingModeIsEnabled();
-	void add_serialOperatingModeIsDisabled();
-	void add_driverIsEnabled();
-	void add_driverIsDisabled();
-	void add_positiveTorqueIsSelected();
-	void add_negativeTorqueIsSelected();
-	void add_rotadeClockwiseIsSelected();
-	void add_rotadeCounterclockwiseIsSelected();
-	void add_driverReseted();
-	void add_bufferOverflow();
+	int8_t add_serialOperatingModeIsEnabled();
+	int8_t add_serialOperatingModeIsDisabled();
+	int8_t add_driverIsEnabled();
+	int8_t add_driverIsDisabled();
+	int8_t add_positiveTorqueIsSelected();
+	int8_t add_negativeTorqueIsSelected();
+	int8_t add_rotadeClockwiseIsSelected();
+	int8_t add_rotadeCounterclockwiseIsSelected();
+	int8_t add_driverReseted();
+	int8_t add_bufferOverflow();
 
-	void add_encoderCalibrationValue(uint32_t calibrationValue);
-	void add_entryState(uint8_t state);
-	void add_positiveTorqueLevel(uint8_t level);
-	void add_negativeTorqueLevel(uint8_t level);
-	void add_maxAbsPhaseCurrent(uint8_t current);
-	void add_timing(uint8_t timing);
-	void add_rotorpositionControllerPParam(uint32_t pParam);
-	void add_rotorpositionControllerIParam(uint32_t iParam);
+	int8_t add_encoderCalibrationValue(uint32_t calibrationValue);
+	int8_t add_entryState(uint8_t state);
+	int8_t add_positiveTorqueLevel(uint8_t level);
+	int8_t add_negativeTorqueLevel(uint8_t level);
+	int8_t add_maxAbsPhaseCurrent(uint8_t current);
+	int8_t add_timing(uint8_t timing);
+	int8_t add_rotorpositionControllerPParam(uint32_t pParam);
+	int8_t add_rotorpositionControllerIParam(uint32_t iParam);
 #endif
 
 

@@ -5,13 +5,6 @@
  *      Author: simon
  */
 
-/*
- * test_bldcDriverSerializer.c
- *
- *  Created on: Jul 20, 2018
- *      Author: simon
- */
-
 // =============== Includes ==============================================
 #include <stdint.h>
 #include <stdio.h>
@@ -20,15 +13,12 @@
 #include "test.h"
 #include "bldcDriverSerializer.h"
 #include "bldcDriverSerializer_operator.h"
+#include "serializer.h"
+#include "serializerPrinter.h"
 
 // =============== Defines ===============================================
 
 // =============== Variables =============================================
-uint8_t serializerPrinterIsEnabled = 1; // enable/disable printer
-
-static uint8_t buffer[500];
-static uint8_t bufferCnt = 0;
-
 static EventAttr enableSerialOperationgMode_testvalue = { 0 };
 static EventAttr enableLogging_testvalue = { 0 };
 static EventAttr enableDriver_testvalue = { 0 };
@@ -47,15 +37,15 @@ static NrAttr_uint8 setMaxPhaseCurrent_testvalue = { 15, 0 };
 static NrAttr_uint8 setTiming_testvalue = { 12, 0 };
 static NrAttr_uint32 setRotorPosControllerPParam_testvalue = { 1587, 0 };
 static NrAttr_uint32 setRotorPosControllerIParam_testvalue = { 8974, 0 };
-static NrAttr_uint32 setLoggingConfig_testvalue = {
-		0b10101010101010101010101010101010, 0 };
+static NrAttr_uint32 setLoggingConfig_testvalue = { 0b10101010101010101010101010101010, 0 };
 
 // =============== Function pointers =====================================
 
 // =============== Function declarations =================================
 
 // =============== Functions =============================================
-int main(void) {
+// --------------- test.h --------------------------------------------------------------------------------------------
+void startTest_bldcDriverOperator() {
 #ifndef OPERATOR_TX
 	printf("TX not enabled");
 	assert(0);
@@ -67,35 +57,30 @@ int main(void) {
 
 	startOperatorPackage();
 
-	add_enableSerialOperatingMode();
-	add_enableLogging();
-	add_EnableDriver();
-	add_DisableDriver();
-	add_SelectPositiveTorque();
-	add_SelectNegativeTorque();
-	add_rotadeClockwise();
-	add_rotadeCounterclockwise();
-	add_getObservingInfos();
-	add_getLoggingConfig();
+	assert(add_enableSerialOperatingMode() == SUCCESSFUL);
+	assert(add_enableLogging() == SUCCESSFUL);
+	assert(add_EnableDriver() == SUCCESSFUL);
+	assert(add_DisableDriver() == SUCCESSFUL);
+	assert(add_SelectPositiveTorque() == SUCCESSFUL);
+	assert(add_SelectNegativeTorque() == SUCCESSFUL);
+	assert(add_rotadeClockwise() == SUCCESSFUL);
+	assert(add_rotadeCounterclockwise() == SUCCESSFUL);
+	assert(add_getObservingInfos() == SUCCESSFUL);
+	assert(add_getLoggingConfig() == SUCCESSFUL);
 
-	add_SetPositiveTorqueLevel(setPositiveTorqueLevel_testvalue.value);
-	add_SetNegativeTorqueLevel(setNegativeTorqueLevel_testvalue.value);
-	add_SetMaxPhaseCurrent(setMaxPhaseCurrent_testvalue.value);
+	assert(add_SetPositiveTorqueLevel(setPositiveTorqueLevel_testvalue.value) == SUCCESSFUL);
+	assert(add_SetNegativeTorqueLevel(setNegativeTorqueLevel_testvalue.value) == SUCCESSFUL);
+	assert(add_SetMaxPhaseCurrent(setMaxPhaseCurrent_testvalue.value) == SUCCESSFUL);
 
-	add_SetTiming(setTiming_testvalue.value);
-	add_SetRotorPosController_pParam(
-			setRotorPosControllerPParam_testvalue.value);
-	add_SetRotorPosController_iParam(
-			setRotorPosControllerIParam_testvalue.value);
-	add_setLoggingConfig(setLoggingConfig_testvalue.value);
+	assert(add_SetTiming(setTiming_testvalue.value) == SUCCESSFUL);
+	assert(add_SetRotorPosController_pParam( setRotorPosControllerPParam_testvalue.value) == SUCCESSFUL);
+	assert(add_SetRotorPosController_iParam( setRotorPosControllerIParam_testvalue.value) == SUCCESSFUL);
+	assert(add_setLoggingConfig(setLoggingConfig_testvalue.value) == SUCCESSFUL);
 
-	closePackage();
+	assert(closePackage() == SUCCESSFUL);
+}
 
-	for (uint8_t cnt = 0; cnt < bufferCnt; cnt++) {
-		handleIncomming(buffer[cnt]);
-	}
-
-	// check flags
+void analyzeFlags_bldcDriverOperator() {
 	assert(enableSerialOperationgMode_testvalue.flag);
 	assert(enableLogging_testvalue.flag);
 	assert(enableDriver_testvalue.flag);
@@ -115,14 +100,9 @@ int main(void) {
 	assert(setRotorPosControllerPParam_testvalue.flag);
 	assert(setRotorPosControllerIParam_testvalue.flag);
 	assert(setLoggingConfig_testvalue.flag);
-
-	printf("passed all tests successfully");
 }
 
-void handleOutgoing(uint8_t data) {
-	buffer[bufferCnt] = data;
-	bufferCnt++;
-}
+// --------------- bldcDriverSerializer_operator.h ---------------------------------------------------------------------
 void enableSerialOperationgMode() {
 	EventAttr *temp = &enableSerialOperationgMode_testvalue;
 	temp->flag = 1;
@@ -201,6 +181,3 @@ void setLoggingConfig(uint32_t config) {
 	temp->flag = 1;
 }
 
-void print(char pTxt[]){
-	printf(pTxt);
-}

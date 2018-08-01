@@ -8,6 +8,7 @@
 #ifndef TESTING_TEST_H_
 #define TESTING_TEST_H_
 
+#include <stdint.h>
 
 typedef struct {
 	uint8_t value;
@@ -37,5 +38,16 @@ typedef struct {
 	uint8_t *pValue;
 	uint8_t flag;
 } StringAttr;
+
+void startTest_serializer();
+
+void startTest_bldcDriverLogger();
+void analyzeFlags_bldcDriverLogger();
+
+void startTest_bldcDriverOperator();
+void analyzeFlags_bldcDriverOperator();
+
+void startTest_bldcDriverObserver();
+void analyzeFlags_bldcDriverObserver();
 
 #endif /* TESTING_TEST_H_ */

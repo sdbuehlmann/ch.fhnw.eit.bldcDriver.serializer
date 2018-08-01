@@ -10,17 +10,12 @@
 #include <assert.h>
 
 #include "test.h"
-#include "bldcDriverSerializer.h"
+#include "serializer.h"
 #include "bldcDriverSerializer_observer.h"
 
 // =============== Defines ===============================================
 
 // =============== Variables =============================================
-uint8_t serializerPrinterIsEnabled = 1; // enable/disable printer
-
-static uint8_t buffer[500];
-static uint8_t bufferCnt = 0;
-
 static uint32_t timestamp_testvalue = 123456789;
 
 static EventAttr serialOperatingModeIsEnabled_testvalue = { 0 };
@@ -48,7 +43,7 @@ static NrAttr_uint32 rotorpositionControllerIParam_testvalue = { 128, 0 };
 // =============== Function declarations =================================
 
 // =============== Functions =============================================
-int main(void) {
+void startTest_bldcDriverObserver() {
 #ifndef OBSERVER_TX
 	printf("logger TX not enabled");
 	assert(0);
@@ -60,68 +55,50 @@ int main(void) {
 
 	startObservingPackage(timestamp_testvalue);
 
-	add_serialOperatingModeIsEnabled();
-	add_serialOperatingModeIsDisabled();
-	add_driverIsEnabled();
-	add_driverIsDisabled();
-	add_positiveTorqueIsSelected();
-	add_negativeTorqueIsSelected();
-	add_rotadeClockwiseIsSelected();
-	add_rotadeCounterclockwiseIsSelected();
-	add_driverReseted();
-	add_bufferOverflow();
+	assert(add_serialOperatingModeIsEnabled() == SUCCESSFUL);
+	assert(add_serialOperatingModeIsDisabled() == SUCCESSFUL);
+	assert(add_driverIsEnabled() == SUCCESSFUL);
+	assert(add_driverIsDisabled() == SUCCESSFUL);
+	assert(add_positiveTorqueIsSelected() == SUCCESSFUL);
+	assert(add_negativeTorqueIsSelected() == SUCCESSFUL);
+	assert(add_rotadeClockwiseIsSelected() == SUCCESSFUL);
+	assert(add_rotadeCounterclockwiseIsSelected() == SUCCESSFUL);
+	assert(add_driverReseted() == SUCCESSFUL);
+	assert(add_bufferOverflow() == SUCCESSFUL);
 
-	add_encoderCalibrationValue(encoderCalibrationValue_testvalue.value);
-	add_entryState(entryState_testvalue.value);
-	add_positiveTorqueLevel(positiveTorqueLevel_testvalue.value);
-	add_negativeTorqueLevel(negativeTorqueLevel_testvalue.value);
-	add_maxAbsPhaseCurrent(maxAbsPhaseCurrent_testvalue.value);
-	add_timing(timing_testvalue.value);
-	add_rotorpositionControllerPParam(
-			rotorpositionControllerPParam_testvalue.value);
-	add_rotorpositionControllerIParam(
-			rotorpositionControllerIParam_testvalue.value);
+	assert(add_encoderCalibrationValue(encoderCalibrationValue_testvalue.value) == SUCCESSFUL);
+	assert(add_entryState(entryState_testvalue.value) == SUCCESSFUL);
+	assert(add_positiveTorqueLevel(positiveTorqueLevel_testvalue.value) == SUCCESSFUL);
+	assert(add_negativeTorqueLevel(negativeTorqueLevel_testvalue.value) == SUCCESSFUL);
+	assert(add_maxAbsPhaseCurrent(maxAbsPhaseCurrent_testvalue.value) == SUCCESSFUL);
+	assert(add_timing(timing_testvalue.value) == SUCCESSFUL);
+	assert(add_rotorpositionControllerPParam(rotorpositionControllerPParam_testvalue.value) == SUCCESSFUL);
+	assert(add_rotorpositionControllerIParam(rotorpositionControllerIParam_testvalue.value) == SUCCESSFUL);
 
 	closePackage();
-
-	for (uint8_t cnt = 0; cnt < bufferCnt; cnt++) {
-		handleIncomming(buffer[cnt]);
-	}
-
-	// check flags
-	add_serialOperatingModeIsEnabled(
-			serialOperatingModeIsEnabled_testvalue.flag);
-	add_serialOperatingModeIsDisabled(
-			serialOperatingModeIsDisabled_testvalue.flag);
-	add_driverIsEnabled(driverIsEnabled_testvalue.flag);
-	add_driverIsDisabled(driverIsDisabled_testvalue.flag);
-	add_positiveTorqueIsSelected(positiveTorqueIsSelected_testvalue.flag);
-	add_negativeTorqueIsSelected(negativeTorqueIsSelected_testvalue.flag);
-	add_rotadeClockwiseIsSelected(rotadeClockwiseIsSelected_testvalue.flag);
-	add_rotadeCounterclockwiseIsSelected(
-			rotadeCounterclockwiseIsSelected_testvalue.flag);
-	add_driverReseted(driverReseted_testvalue.flag);
-	add_bufferOverflow(bufferOverflow_testvalue.flag);
-
-	add_encoderCalibrationValue(encoderCalibrationValue_testvalue.flag);
-	add_entryState(entryState_testvalue.flag);
-	add_positiveTorqueLevel(positiveTorqueLevel_testvalue.flag);
-	add_negativeTorqueLevel(negativeTorqueLevel_testvalue.flag);
-	add_maxAbsPhaseCurrent(maxAbsPhaseCurrent_testvalue.flag);
-	add_timing(timing_testvalue.flag);
-	add_rotorpositionControllerPParam(
-			rotorpositionControllerPParam_testvalue.flag);
-	add_rotorpositionControllerIParam(
-			rotorpositionControllerIParam_testvalue.flag);
-
-	printf("passed all tests successfully");
 }
 
-void handleOutgoing(uint8_t data) {
-	buffer[bufferCnt] = data;
-	bufferCnt++;
-}
+void analyzeFlags_bldcDriverObserver() {
+	assert(serialOperatingModeIsEnabled_testvalue.flag);
+	assert(serialOperatingModeIsDisabled_testvalue.flag);
+	assert(driverIsEnabled_testvalue.flag);
+	assert(driverIsDisabled_testvalue.flag);
+	assert(positiveTorqueIsSelected_testvalue.flag);
+	assert(negativeTorqueIsSelected_testvalue.flag);
+	assert(rotadeClockwiseIsSelected_testvalue.flag);
+	assert(rotadeCounterclockwiseIsSelected_testvalue.flag);
+	assert(driverReseted_testvalue.flag);
+	assert(bufferOverflow_testvalue.flag);
 
+	assert(encoderCalibrationValue_testvalue.flag);
+	assert(entryState_testvalue.flag);
+	assert(positiveTorqueLevel_testvalue.flag);
+	assert(negativeTorqueLevel_testvalue.flag);
+	assert(maxAbsPhaseCurrent_testvalue.flag);
+	assert(timing_testvalue.flag);
+	assert(rotorpositionControllerPParam_testvalue.flag);
+	assert(rotorpositionControllerIParam_testvalue.flag);
+}
 // ____RX____ (if supported, functions has to be implemented from user)
 void serialOperatingModeIsEnabled(uint32_t timestamp) {
 	assert(timestamp == timestamp_testvalue);
@@ -129,7 +106,7 @@ void serialOperatingModeIsEnabled(uint32_t timestamp) {
 }
 void serialOperatingModeIsDisabled(uint32_t timestamp) {
 	assert(timestamp == timestamp_testvalue);
-		serialOperatingModeIsDisabled_testvalue.flag = 1;
+	serialOperatingModeIsDisabled_testvalue.flag = 1;
 }
 void driverIsEnabled(uint32_t timestamp) {
 	assert(timestamp == timestamp_testvalue);
@@ -203,8 +180,4 @@ void rotorpositionControllerIParam(uint32_t iParam, uint32_t timestamp) {
 	assert(timestamp == timestamp_testvalue);
 	assert(iParam == rotorpositionControllerIParam_testvalue.value);
 	rotorpositionControllerIParam_testvalue.flag = 1;
-}
-
-void print(char pTxt[]){
-	printf(pTxt);
 }

@@ -38,25 +38,25 @@ void setLoggingConfig(uint32_t config);
 // ____TX____
 void startOperatorPackage();
 
-void add_enableSerialOperatingMode();
-void add_enableLogging();
-void add_EnableDriver();
-void add_DisableDriver();
-void add_SelectPositiveTorque();
-void add_SelectNegativeTorque();
-void add_rotadeClockwise();
-void add_rotadeCounterclockwise();
-void add_getObservingInfos();
-void add_getLoggingConfig();
+int8_t add_enableSerialOperatingMode();
+int8_t add_enableLogging();
+int8_t add_EnableDriver();
+int8_t add_DisableDriver();
+int8_t add_SelectPositiveTorque();
+int8_t add_SelectNegativeTorque();
+int8_t add_rotadeClockwise();
+int8_t add_rotadeCounterclockwise();
+int8_t add_getObservingInfos();
+int8_t add_getLoggingConfig();
 
-void add_SetPositiveTorqueLevel(uint8_t level);
-void add_SetNegativeTorqueLevel(uint8_t level);
-void add_SetMaxPhaseCurrent(uint8_t level);
+int8_t add_SetPositiveTorqueLevel(uint8_t level);
+int8_t add_SetNegativeTorqueLevel(uint8_t level);
+int8_t add_SetMaxPhaseCurrent(uint8_t level);
 
-void add_SetTiming(uint8_t timing);
-void add_SetRotorPosController_pParam(uint32_t pParam);
-void add_SetRotorPosController_iParam(uint32_t iParam);
-void add_setLoggingConfig(uint32_t config);
+int8_t add_SetTiming(uint8_t timing);
+int8_t add_SetRotorPosController_pParam(uint32_t pParam);
+int8_t add_SetRotorPosController_iParam(uint32_t iParam);
+int8_t add_setLoggingConfig(uint32_t config);
 #endif
 
 
